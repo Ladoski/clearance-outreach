@@ -1,9 +1,6 @@
 const express = require('express');
 const path = require('path');
 const cron = require('node-cron');
-const adminRoutes = require('./routes/admin');
-app.use('/api/cron', cronRoutes);
-app.use('/api/admin', adminRoutes);
 const config = require('./config');
 const { runDailyFollowUps } = require('./lib/dailyJob');
 
@@ -13,6 +10,7 @@ const outreachRoutes = require('./routes/outreach');
 const offersRoutes = require('./routes/offers');
 const webhooksRoutes = require('./routes/webhooks');
 const cronRoutes = require('./routes/cron');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 app.use(express.json());
@@ -26,6 +24,7 @@ app.use('/api/outreach', outreachRoutes);
 app.use('/api/offers', offersRoutes);
 app.use('/webhooks', webhooksRoutes);
 app.use('/api/cron', cronRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.listen(config.port, () => {
   // eslint-disable-next-line no-console
