@@ -2,37 +2,331 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Clearance Outreach Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Clearance Outreach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  body { font-family: system-ui, sans-serif; margin: 2rem; background: #f7f7f8; color: #1a1a1a; }
-  h1 { font-size: 1.4rem; }
-  .key-row { margin-bottom: 1.5rem; }
-  input[type=text] { padding: 6px 8px; width: 320px; }
-  button { padding: 6px 12px; cursor: pointer; }
-  table { border-collapse: collapse; width: 100%; margin-bottom: 2rem; background: white; }
-  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; font-size: 0.9rem; }
-  th { background: #eee; }
-  .group-header { background: #333; color: white; font-weight: bold; }
-  .status { padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
-  .status-new { background: #ddd; }
-  .status-contacted, .status-follow_up { background: #cce5ff; }
-  .status-replied, .status-negotiating { background: #fff3cd; }
-  .status-agreed, .status-offer_submitted { background: #d4edda; }
-  .status-floor_reached, .status-cold, .status-dead { background: #f8d7da; }
+  :root {
+    --bg: #17181B;
+    --panel: #1F2124;
+    --hairline: #33302A;
+    --brass: #AD8A55;
+    --brass-dim: #7C6640;
+    --ivory: #EDE7DC;
+    --muted: #8C8478;
+    --sage: #7C9473;
+    --rust: #9B5A46;
+    --amber: #C9A227;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ivory);
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .page {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 56px 32px 96px;
+  }
+
+  /* --- Header --- */
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 40px;
+  }
+
+  .wordmark {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .mark {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    color: var(--brass);
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 28px;
+    letter-spacing: 0.2px;
+    margin: 0;
+    color: var(--ivory);
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+  }
+
+  .key-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .key-form input[type=text] {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    color: var(--ivory);
+    padding: 10px 14px;
+    width: 260px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .key-form input[type=text]:focus { border-color: var(--brass); }
+  .key-form input[type=text]::placeholder { color: var(--muted); }
+
+  button {
+    background: transparent;
+    color: var(--brass);
+    border: 1px solid var(--brass-dim);
+    padding: 10px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  button:hover {
+    background: var(--brass);
+    color: #17181B;
+    border-color: var(--brass);
+  }
+
+  /* --- Section headings --- */
+  .section-label {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 56px 0 20px;
+  }
+  .section-label:first-of-type { margin-top: 0; }
+  .section-label h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 19px;
+    margin: 0;
+    white-space: nowrap;
+    color: var(--ivory);
+  }
+  .section-label .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--hairline);
+  }
+
+  .empty-note {
+    color: var(--muted);
+    font-size: 14px;
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+    padding: 8px 0 24px;
+  }
+
+  /* --- Round grouping --- */
+  .round-group {
+    margin-bottom: 36px;
+  }
+
+  .round-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .round-number {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    color: var(--brass);
+  }
+  .round-meta {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  thead th {
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--muted);
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  thead th.num { text-align: right; }
+
+  tbody td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(51,48,42,0.55);
+    font-size: 13.5px;
+    color: var(--ivory);
+    vertical-align: middle;
+  }
+  tbody tr:hover td { background: rgba(173,138,85,0.05); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .price-cell {
+    text-align: right;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 17px;
+    font-variant-numeric: tabular-nums;
+    color: var(--brass);
+    white-space: nowrap;
+  }
+
+  .muted-cell { color: var(--muted); font-size: 12.5px; }
+
+  /* --- Status tags --- */
+  .status {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid currentColor;
+    letter-spacing: 0.2px;
+  }
+  .status-new           { color: var(--muted); }
+  .status-contacted,
+  .status-follow_up      { color: var(--brass); }
+  .status-replied,
+  .status-negotiating    { color: var(--amber); }
+  .status-agreed,
+  .status-offer_submitted,
+  .status-approved       { color: var(--sage); }
+  .status-floor_reached,
+  .status-cold,
+  .status-dead,
+  .status-rejected       { color: var(--rust); }
+
+  /* --- Offers list --- */
+  .offer-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .offer-row:last-child { border-bottom: none; }
+
+  .offer-info { flex: 1; min-width: 0; }
+  .offer-lead {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    color: var(--ivory);
+  }
+  .offer-contact {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .offer-notes {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  .offer-price {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 24px;
+    color: var(--brass);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .offer-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .btn-approve { color: var(--sage); border-color: var(--sage); }
+  .btn-approve:hover { background: var(--sage); color: #17181B; }
+  .btn-reject { color: var(--rust); border-color: var(--rust); }
+  .btn-reject:hover { background: var(--rust); color: #17181B; }
+
+  @media (max-width: 640px) {
+    .page { padding: 32px 18px 64px; }
+    header { flex-direction: column; align-items: flex-start; }
+    .key-form input[type=text] { width: 100%; }
+    .key-form { width: 100%; }
+    table, thead, tbody, tr, td { display: block; }
+    thead { display: none; }
+    tbody tr { padding: 10px 0; border-bottom: 1px solid var(--hairline); }
+    tbody td { border: none; padding: 3px 0; }
+    .price-cell { text-align: left; font-size: 18px; }
+    .offer-row { flex-direction: column; align-items: flex-start; }
+    .offer-actions { width: 100%; }
+    .offer-actions button { flex: 1; }
+  }
 </style>
 </head>
 <body>
-<h1>Clearance Outreach Dashboard</h1>
-<div class="key-row">
-  Admin API key: <input type="text" id="apiKey" placeholder="paste ADMIN_API_KEY" />
-  <button onclick="loadAll()">Load</button>
+<div class="page">
+
+  <header>
+    <div class="wordmark">
+      <svg class="mark" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 26V10L15 3L26 10V26" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        <path d="M11 26V16H19V26" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <h1>Clearance Outreach</h1>
+        <div class="subtitle">the liquidation desk</div>
+      </div>
+    </div>
+    <div class="key-form">
+      <input type="text" id="apiKey" placeholder="Admin key" />
+      <button onclick="loadAll()">Load</button>
+    </div>
+  </header>
+
+  <div class="section-label">
+    <h2>Leads by round</h2>
+    <div class="rule"></div>
+  </div>
+  <div id="grouped"><p class="empty-note">Enter your admin key and click Load.</p></div>
+
+  <div class="section-label">
+    <h2>Offers awaiting approval</h2>
+    <div class="rule"></div>
+  </div>
+  <div id="offers"><p class="empty-note">Nothing to review yet.</p></div>
+
 </div>
-
-<h2>Leads grouped by day / status</h2>
-<div id="grouped">Enter your API key and click Load.</div>
-
-<h2>Offers pending approval</h2>
-<div id="offers"></div>
 
 <script>
 async function api(path) {
@@ -42,58 +336,84 @@ async function api(path) {
   return res.json();
 }
 
+function money(n) {
+  return '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+
+function fmtDate(d) {
+  return d ? new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';
+}
+
 async function loadAll() {
   try {
     const grouped = await api('/api/leads/grouped');
     renderGrouped(grouped);
+  } catch (err) {
+    document.getElementById('grouped').innerHTML = '<p class="empty-note">Could not load leads: ' + err.message + '</p>';
+  }
+  try {
     const offers = await api('/api/offers?status=pending_approval');
     renderOffers(offers);
   } catch (err) {
-    alert(err.message);
+    document.getElementById('offers').innerHTML = '<p class="empty-note">Could not load offers: ' + err.message + '</p>';
   }
 }
 
 function renderGrouped(groups) {
-  let html = '<table><tr><th>Round (day)</th><th>Status</th><th>Name</th><th>Phone</th><th>Email</th><th>Current Price</th><th>Last Contacted</th><th>Next Follow-up</th></tr>';
+  const el = document.getElementById('grouped');
+  if (!groups.length) {
+    el.innerHTML = '<p class="empty-note">No leads yet. Import a list to get started.</p>';
+    return;
+  }
+  let html = '';
   for (const g of groups) {
-    html += `<tr class="group-header"><td colspan="8">Round ${g.day_count} — ${g.status} (${g.lead_count} leads)</td></tr>`;
+    html += `<div class="round-group">
+      <div class="round-header">
+        <span class="round-number">Round ${g.day_count}</span>
+        <span class="round-meta"><span class="status status-${g.status}">${g.status.replace('_',' ')}</span> &nbsp;·&nbsp; ${g.lead_count} lead${g.lead_count === 1 ? '' : 's'}</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Phone</th><th>Email</th><th class="num">Current price</th><th>Last contacted</th><th>Next follow-up</th></tr>
+        </thead>
+        <tbody>`;
     for (const l of g.leads) {
       html += `<tr>
-        <td>${g.day_count}</td>
-        <td><span class="status status-${l.status}">${l.status}</span></td>
-        <td>${l.name || ''}</td>
-        <td>${l.phone || ''}</td>
-        <td>${l.email || ''}</td>
-        <td>${l.current_price != null ? '$' + Number(l.current_price).toLocaleString() : ''}</td>
-        <td>${l.last_contacted_at ? new Date(l.last_contacted_at).toLocaleString() : ''}</td>
-        <td>${l.next_follow_up_at ? new Date(l.next_follow_up_at).toLocaleString() : ''}</td>
+        <td>${l.name || '—'}</td>
+        <td class="muted-cell">${l.phone || '—'}</td>
+        <td class="muted-cell">${l.email || '—'}</td>
+        <td class="price-cell">${l.current_price != null ? money(l.current_price) : '—'}</td>
+        <td class="muted-cell">${fmtDate(l.last_contacted_at)}</td>
+        <td class="muted-cell">${fmtDate(l.next_follow_up_at)}</td>
       </tr>`;
     }
+    html += `</tbody></table></div>`;
   }
-  html += '</table>';
-  document.getElementById('grouped').innerHTML = html;
+  el.innerHTML = html;
 }
 
 function renderOffers(offers) {
+  const el = document.getElementById('offers');
   if (!offers.length) {
-    document.getElementById('offers').innerHTML = '<p>No offers pending approval.</p>';
+    el.innerHTML = '<p class="empty-note">Nothing to review yet.</p>';
     return;
   }
-  let html = '<table><tr><th>Lead</th><th>Proposed Price</th><th>Submitted By</th><th>Notes</th><th>Actions</th></tr>';
+  let html = '';
   for (const o of offers) {
-    html += `<tr>
-      <td>${o.lead_name || ''} (${o.phone || o.email || ''})</td>
-      <td>$${Number(o.proposed_price).toLocaleString()}</td>
-      <td>${o.submitted_by || ''}</td>
-      <td>${o.notes || ''}</td>
-      <td>
-        <button onclick="reviewOffer(${o.id}, 'approved')">Approve</button>
-        <button onclick="reviewOffer(${o.id}, 'rejected')">Reject</button>
-      </td>
-    </tr>`;
+    html += `<div class="offer-row">
+      <div class="offer-info">
+        <div class="offer-lead">${o.lead_name || 'Unnamed lead'}</div>
+        <div class="offer-contact">${o.phone || o.email || ''}${o.submitted_by ? ' · submitted by ' + o.submitted_by : ''}</div>
+        ${o.notes ? `<div class="offer-notes">${o.notes}</div>` : ''}
+      </div>
+      <div class="offer-price">${money(o.proposed_price)}</div>
+      <div class="offer-actions">
+        <button class="btn-approve" onclick="reviewOffer(${o.id}, 'approved')">Approve</button>
+        <button class="btn-reject" onclick="reviewOffer(${o.id}, 'rejected')">Reject</button>
+      </div>
+    </div>`;
   }
-  html += '</table>';
-  document.getElementById('offers').innerHTML = html;
+  el.innerHTML = html;
 }
 
 async function reviewOffer(id, status) {
