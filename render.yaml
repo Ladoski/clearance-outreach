@@ -1,0 +1,50 @@
+databases:
+  - name: clearance-outreach-db
+    plan: free
+    databaseName: clearance_outreach
+    user: clearance_outreach
+
+services:
+  - type: web
+    name: clearance-outreach-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: clearance-outreach-db
+          property: connectionString
+      - key: ADMIN_API_KEY
+        generateValue: true
+      - key: CRON_SECRET
+        generateValue: true
+      - key: EMAIL_WEBHOOK_SECRET
+        generateValue: true
+      # Set these manually in the Render dashboard after first deploy:
+      # RC_CLIENT_ID, RC_CLIENT_SECRET, RC_JWT, RC_FROM_NUMBER, RC_WEBHOOK_URL,
+      # EMAIL_ENABLED, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM,
+      # COMPANY_NAME, COMPANY_PHONE, PRICING_STRATEGY, PRICING_PERCENT_PER_DAY, etc.
+
+  - type: cron
+    name: clearance-outreach-daily-followup
+    runtime: node
+    schedule: "0 14 * * *" # 14:00 UTC daily — adjust to your local send time
+    buildCommand: npm install
+    startCommand: >
+      node -e "
+      require('dotenv').config();
+      fetch(process.env.SELF_URL + '/api/cron/daily-follow-up', {
+        method: 'POST',
+        headers: { 'x-cron-secret': process.env.CRON_SECRET }
+      }).then(r => r.json()).then(console.log).catch(e => { console.error(e); process.exit(1); });
+      "
+    envVars:
+      - key: SELF_URL
+        sync: false # set to your web service URL, e.g. https://clearance-outreach-api.onrender.com
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: clearance-outreach-api
+          envVarKey: CRON_SECRET

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Clearance Outreach Dashboard</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 2rem; background: #f7f7f8; color: #1a1a1a; }
+  h1 { font-size: 1.4rem; }
+  .key-row { margin-bottom: 1.5rem; }
+  input[type=text] { padding: 6px 8px; width: 320px; }
+  button { padding: 6px 12px; cursor: pointer; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 2rem; background: white; }
+  th, td { border: 1px solid #ddd; padding: 6px 10px; text-align: left; font-size: 0.9rem; }
+  th { background: #eee; }
+  .group-header { background: #333; color: white; font-weight: bold; }
+  .status { padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+  .status-new { background: #ddd; }
+  .status-contacted, .status-follow_up { background: #cce5ff; }
+  .status-replied, .status-negotiating { background: #fff3cd; }
+  .status-agreed, .status-offer_submitted { background: #d4edda; }
+  .status-floor_reached, .status-cold, .status-dead { background: #f8d7da; }
+</style>
+</head>
+<body>
+<h1>Clearance Outreach Dashboard</h1>
+<div class="key-row">
+  Admin API key: <input type="text" id="apiKey" placeholder="paste ADMIN_API_KEY" />
+  <button onclick="loadAll()">Load</button>
+</div>
+
+<h2>Leads grouped by day / status</h2>
+<div id="grouped">Enter your API key and click Load.</div>
+
+<h2>Offers pending approval</h2>
+<div id="offers"></div>
+
+<script>
+async function api(path) {
+  const key = document.getElementById('apiKey').value;
+  const res = await fetch(path, { headers: { 'x-api-key': key } });
+  if (!res.ok) throw new Error('Request failed: ' + res.status);
+  return res.json();
+}
+
+async function loadAll() {
+  try {
+    const grouped = await api('/api/leads/grouped');
+    renderGrouped(grouped);
+    const offers = await api('/api/offers?status=pending_approval');
+    renderOffers(offers);
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+function renderGrouped(groups) {
+  let html = '<table><tr><th>Round (day)</th><th>Status</th><th>Name</th><th>Phone</th><th>Email</th><th>Current Price</th><th>Last Contacted</th><th>Next Follow-up</th></tr>';
+  for (const g of groups) {
+    html += `<tr class="group-header"><td colspan="8">Round ${g.day_count} — ${g.status} (${g.lead_count} leads)</td></tr>`;
+    for (const l of g.leads) {
+      html += `<tr>
+        <td>${g.day_count}</td>
+        <td><span class="status status-${l.status}">${l.status}</span></td>
+        <td>${l.name || ''}</td>
+        <td>${l.phone || ''}</td>
+        <td>${l.email || ''}</td>
+        <td>${l.current_price != null ? '$' + Number(l.current_price).toLocaleString() : ''}</td>
+        <td>${l.last_contacted_at ? new Date(l.last_contacted_at).toLocaleString() : ''}</td>
+        <td>${l.next_follow_up_at ? new Date(l.next_follow_up_at).toLocaleString() : ''}</td>
+      </tr>`;
+    }
+  }
+  html += '</table>';
+  document.getElementById('grouped').innerHTML = html;
+}
+
+function renderOffers(offers) {
+  if (!offers.length) {
+    document.getElementById('offers').innerHTML = '<p>No offers pending approval.</p>';
+    return;
+  }
+  let html = '<table><tr><th>Lead</th><th>Proposed Price</th><th>Submitted By</th><th>Notes</th><th>Actions</th></tr>';
+  for (const o of offers) {
+    html += `<tr>
+      <td>${o.lead_name || ''} (${o.phone || o.email || ''})</td>
+      <td>$${Number(o.proposed_price).toLocaleString()}</td>
+      <td>${o.submitted_by || ''}</td>
+      <td>${o.notes || ''}</td>
+      <td>
+        <button onclick="reviewOffer(${o.id}, 'approved')">Approve</button>
+        <button onclick="reviewOffer(${o.id}, 'rejected')">Reject</button>
+      </td>
+    </tr>`;
+  }
+  html += '</table>';
+  document.getElementById('offers').innerHTML = html;
+}
+
+async function reviewOffer(id, status) {
+  const key = document.getElementById('apiKey').value;
+  const res = await fetch('/api/offers/' + id, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+    body: JSON.stringify({ status, reviewed_by: 'boss' }),
+  });
+  if (!res.ok) return alert('Failed to update offer');
+  loadAll();
+}
+</script>
+</body>
+</html>

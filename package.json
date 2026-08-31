@@ -1,0 +1,26 @@
+{
+  "name": "clearance-outreach",
+  "version": "1.0.0",
+  "description": "Automated SMS appointment-setter system for building-clearance lead outreach via RingCentral",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/lib/migrate.js"
+  },
+  "dependencies": {
+    "@ringcentral/sdk": "^4.6.0",
+    "csv-parse": "^5.5.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "multer": "^2.0.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.14",
+    "pdf-parse": "^1.1.1",
+    "pg": "^8.12.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
