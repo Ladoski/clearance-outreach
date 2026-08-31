@@ -1,6 +1,9 @@
 const express = require('express');
 const path = require('path');
 const cron = require('node-cron');
+const adminRoutes = require('./routes/admin');
+app.use('/api/cron', cronRoutes);
+app.use('/api/admin', adminRoutes);
 const config = require('./config');
 const { runDailyFollowUps } = require('./lib/dailyJob');
 
