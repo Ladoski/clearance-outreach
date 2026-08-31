@@ -26,6 +26,25 @@ app.use('/webhooks', webhooksRoutes);
 app.use('/api/cron', cronRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Catches any error from routes (including async ones — Express 5 auto-forwards
+// rejected promises here) and returns clean JSON instead of crashing the server.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  // eslint-disable-next-line no-console
+  console.error('[error]', err);
+  res.status(500).json({ error: 'Internal server error', detail: err.message });
+});
+
+// Final safety net: never let an unexpected error take the whole process down.
+process.on('unhandledRejection', (reason) => {
+  // eslint-disable-next-line no-console
+  console.error('[unhandledRejection]', reason);
+});
+process.on('uncaughtException', (err) => {
+  // eslint-disable-next-line no-console
+  console.error('[uncaughtException]', err);
+});
+
 app.listen(config.port, () => {
   // eslint-disable-next-line no-console
   console.log(`[server] Listening on port ${config.port}`);
