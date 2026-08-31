@@ -38,7 +38,7 @@ router.get('/', async (req, res) => {
   let where = '';
   if (status) {
     params.push(status);
-    where = 'WHERE status = $1';
+    where = 'WHERE offers.status = $1';
   }
   const { rows } = await db.query(
     `SELECT offers.*, leads.name AS lead_name, leads.phone, leads.email
