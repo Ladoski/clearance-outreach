@@ -1,6 +1,5 @@
 const db = require('./db');
-const { getPlatform } = require('./ringcentral');
-const config = require('../config');
+const { ensureLoggedIn } = require('./ringcentral');
 
 /**
  * Finds an existing contact by phone number, or creates a new "new" contact.
@@ -31,7 +30,7 @@ async function upsertContactForPhone(phoneNumber, name) {
  * expected to transcribe them right away).
  */
 async function syncRecentCalls(sinceISO) {
-  const p = await getPlatform();
+  const p = await ensureLoggedIn();
 
   const resp = await p.get('/restapi/v1.0/account/~/extension/~/call-log', {
     dateFrom: sinceISO,
@@ -90,7 +89,7 @@ async function syncRecentCalls(sinceISO) {
 
 /** Downloads the raw audio bytes for a call recording (needs RC auth). */
 async function downloadRecording(contentUri) {
-  const p = await getPlatform();
+  const p = await ensureLoggedIn();
   const resp = await p.get(contentUri);
   const raw = resp.raw ? resp.raw() : resp; // RC SDK Response wrapper vs native fetch Response
   const arrayBuffer = await raw.arrayBuffer();

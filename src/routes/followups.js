@@ -15,11 +15,12 @@ router.get('/', async (req, res) => {
 /** POST /api/followups/:contactId/snooze  { hours: 24 }  (or "days") */
 router.post('/:contactId/snooze', async (req, res) => {
   const hours = Number(req.body.hours || (req.body.days ? req.body.days * 24 : 24));
+  const nextFollowUp = new Date(Date.now() + hours * 3600 * 1000);
   const { rows } = await db.query(
-    `UPDATE contacts SET next_follow_up_at = now() + ($1 || ' hours')::interval,
+    `UPDATE contacts SET next_follow_up_at = $1,
                           status = 'follow_up', updated_at = now()
      WHERE id = $2 RETURNING *`,
-    [hours, req.params.contactId]
+    [nextFollowUp, req.params.contactId]
   );
   if (!rows[0]) return res.status(404).json({ error: 'Not found' });
   res.json(rows[0]);

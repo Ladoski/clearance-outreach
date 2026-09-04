@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../lib/db');
 const { requireAdmin } = require('../lib/auth');
 const { runCallSync } = require('../lib/callPipeline');
+const { analyzeTranscript } = require('../lib/callAnalysis');
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -66,7 +67,6 @@ router.post('/:id/analyze', async (req, res) => {
   // recording_id alone isn't enough to redownload; require a fresh sync's contentUri.
   // For a manual re-analyze when we already have a transcript, just re-score it.
   if (call.transcript) {
-    const { analyzeTranscript } = require('../lib/callAnalysis');
     try {
       const scorecard = await analyzeTranscript(call.transcript);
       await db.query(

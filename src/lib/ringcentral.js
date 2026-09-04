@@ -62,4 +62,4 @@ async function createInboundSubscription() {
   return resp.json();
 }
 
-module.exports = { sendSms, createInboundSubscription, getPlatform };
+module.exports = { sendSms, createInboundSubscription, getPlatform, ensureLoggedIn };
