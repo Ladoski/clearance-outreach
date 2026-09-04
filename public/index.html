@@ -278,6 +278,64 @@
   .btn-reject { color: var(--rust); border-color: var(--rust); }
   .btn-reject:hover { background: var(--rust); color: #17181B; }
 
+  /* --- Follow-up center --- */
+  .fu-buckets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .fu-bucket {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 16px;
+  }
+  .fu-bucket h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 14px;
+    margin: 0 0 4px;
+    color: var(--brass);
+  }
+  .fu-bucket .fu-count {
+    font-family: 'Fraunces', serif;
+    font-size: 30px;
+    color: var(--ivory);
+    margin-bottom: 10px;
+  }
+  .fu-item {
+    padding: 8px 0;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+  }
+  .fu-item:first-of-type { border-top: none; }
+  .fu-item .fu-name { color: var(--ivory); }
+  .fu-item .fu-meta { color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+  .fu-actions { display: flex; gap: 6px; margin-top: 6px; }
+  .fu-actions button { padding: 4px 10px; font-size: 11px; }
+
+  /* --- Call score badge --- */
+  .score-badge {
+    display: inline-block;
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 15px;
+    padding: 2px 10px;
+    border-radius: 30px;
+    border: 1px solid currentColor;
+  }
+  .score-high { color: var(--sage); }
+  .score-mid  { color: var(--amber); }
+  .score-low  { color: var(--rust); }
+  .score-none { color: var(--muted); font-size: 12px; font-style: italic; border: none; }
+
+  .call-row { padding: 14px 0; border-bottom: 1px solid var(--hairline); cursor: pointer; }
+  .call-row:hover { background: rgba(173,138,85,0.05); }
+  .call-row:last-child { border-bottom: none; }
+  .call-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .call-priority { font-size: 12.5px; color: var(--muted); margin-top: 4px; font-style: italic; }
+
   @media (max-width: 640px) {
     .page { padding: 32px 18px 64px; }
     header { flex-direction: column; align-items: flex-start; }
@@ -311,8 +369,21 @@
     <div class="key-form">
       <input type="text" id="apiKey" placeholder="Admin key" />
       <button onclick="loadAll()">Load</button>
+      <button onclick="syncCalls()" id="syncBtn">Sync calls</button>
     </div>
   </header>
+
+  <div class="section-label">
+    <h2>Follow-up center</h2>
+    <div class="rule"></div>
+  </div>
+  <div id="followups"><p class="empty-note">Enter your admin key and click Load.</p></div>
+
+  <div class="section-label">
+    <h2>Recent calls &amp; coaching</h2>
+    <div class="rule"></div>
+  </div>
+  <div id="calls"><p class="empty-note">Enter your admin key and click Load.</p></div>
 
   <div class="section-label">
     <h2>Leads by round</h2>
@@ -346,6 +417,18 @@ function fmtDate(d) {
 
 async function loadAll() {
   try {
+    const buckets = await api('/api/followups');
+    renderFollowUps(buckets);
+  } catch (err) {
+    document.getElementById('followups').innerHTML = '<p class="empty-note">Could not load follow-ups: ' + err.message + '</p>';
+  }
+  try {
+    const calls = await api('/api/calls');
+    renderCalls(calls);
+  } catch (err) {
+    document.getElementById('calls').innerHTML = '<p class="empty-note">Could not load calls: ' + err.message + '</p>';
+  }
+  try {
     const grouped = await api('/api/leads/grouped');
     renderGrouped(grouped);
   } catch (err) {
@@ -356,6 +439,130 @@ async function loadAll() {
     renderOffers(offers);
   } catch (err) {
     document.getElementById('offers').innerHTML = '<p class="empty-note">Could not load offers: ' + err.message + '</p>';
+  }
+}
+
+const BUCKET_LABELS = {
+  overdue: 'Overdue',
+  today: 'Due today',
+  tomorrow: 'Due tomorrow',
+  waiting_for_response: 'Waiting for response',
+  hot_leads: 'Hot leads',
+};
+
+function renderFollowUps(buckets) {
+  const el = document.getElementById('followups');
+  const keys = Object.keys(BUCKET_LABELS);
+  const anyItems = keys.some((k) => (buckets[k] || []).length);
+  if (!anyItems) {
+    el.innerHTML = '<p class="empty-note">Nothing needs follow-up right now. Sync calls to pull in new contacts.</p>';
+    return;
+  }
+  let html = '<div class="fu-buckets">';
+  for (const key of keys) {
+    const items = buckets[key] || [];
+    html += `<div class="fu-bucket"><h3>${BUCKET_LABELS[key]}</h3><div class="fu-count">${items.length}</div>`;
+    for (const c of items.slice(0, 8)) {
+      html += `<div class="fu-item">
+        <div class="fu-name">${c.name || c.phone || 'Unknown'}${c.last_call_score != null ? ' · ' + c.last_call_score + '/100' : ''}</div>
+        <div class="fu-meta">${c.phone || ''}${c.company ? ' · ' + c.company : ''}</div>
+        <div class="fu-actions">
+          <button onclick="snooze(${c.id}, 24)">+1 day</button>
+          <button onclick="completeFollowUp(${c.id})">Done</button>
+        </div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+async function snooze(contactId, hours) {
+  const key = document.getElementById('apiKey').value;
+  await fetch('/api/followups/' + contactId + '/snooze', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': key },
+    body: JSON.stringify({ hours }),
+  });
+  loadAll();
+}
+
+async function completeFollowUp(contactId) {
+  const key = document.getElementById('apiKey').value;
+  await fetch('/api/followups/' + contactId + '/complete', {
+    method: 'POST',
+    headers: { 'x-api-key': key },
+  });
+  loadAll();
+}
+
+function scoreClass(score) {
+  if (score == null) return 'score-none';
+  if (score >= 80) return 'score-high';
+  if (score >= 60) return 'score-mid';
+  return 'score-low';
+}
+
+function renderCalls(calls) {
+  const el = document.getElementById('calls');
+  if (!calls.length) {
+    el.innerHTML = '<p class="empty-note">No calls synced yet. Click "Sync calls" above.</p>';
+    return;
+  }
+  let html = '';
+  for (const c of calls.slice(0, 25)) {
+    const scoreHtml = c.overall_score != null
+      ? `<span class="score-badge ${scoreClass(c.overall_score)}">${c.overall_score}/100</span>`
+      : `<span class="score-badge score-none">${c.transcript_status === 'processing' ? 'analyzing…' : c.transcript_status === 'no_recording' ? 'no recording' : c.transcript_status}</span>`;
+    html += `<div class="call-row" onclick="viewCall(${c.id})">
+      <div class="call-top">
+        <div>
+          <div class="fu-name">${c.contact_name || c.contact_phone || c.phone_number || 'Unknown'}</div>
+          <div class="fu-meta">${c.direction || ''} · ${fmtDate(c.start_time)}${c.duration_seconds ? ' · ' + Math.round(c.duration_seconds / 60) + ' min' : ''}</div>
+        </div>
+        ${scoreHtml}
+      </div>
+      ${c.coaching_priority ? `<div class="call-priority">${c.coaching_priority}</div>` : ''}
+    </div>`;
+  }
+  el.innerHTML = html;
+}
+
+async function viewCall(id) {
+  try {
+    const call = await api('/api/calls/' + id);
+    let msg = (call.contact_name || call.contact_phone || 'Call') + '\n\n';
+    if (call.score) {
+      msg += 'Score: ' + call.score.overall_score + '/100\n\n';
+      msg += 'Strengths:\n- ' + (call.score.strengths || []).join('\n- ') + '\n\n';
+      msg += 'Weaknesses:\n- ' + (call.score.weaknesses || []).join('\n- ') + '\n\n';
+      msg += 'Next call: ' + call.score.next_call_recommendation;
+    } else {
+      msg += 'Status: ' + call.transcript_status;
+    }
+    alert(msg);
+  } catch (err) {
+    alert('Could not load call: ' + err.message);
+  }
+}
+
+async function syncCalls() {
+  const btn = document.getElementById('syncBtn');
+  const key = document.getElementById('apiKey').value;
+  btn.disabled = true;
+  btn.textContent = 'Syncing…';
+  try {
+    const res = await fetch('/api/calls/sync', { method: 'POST', headers: { 'x-api-key': key } });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Sync failed');
+    alert('Synced. ' + json.newCalls + ' new call(s), ' + json.processed + ' analyzed.');
+    loadAll();
+  } catch (err) {
+    alert('Sync failed: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sync calls';
   }
 }
 

@@ -53,12 +53,25 @@ module.exports = {
     floorPercentOfAsk: Number(process.env.PRICING_FLOOR_PERCENT || 50), // stop at 50% of initial ask by default
   },
 
-  // --- Follow-up cadence ---
+  // --- Follow-up cadence (price-negotiation leads) ---
   followUp: {
     // How many hours must pass with no reply before the next auto follow-up fires
     hoursBetweenFollowUps: Number(process.env.FOLLOWUP_HOURS || 24),
     // Local hour (0-23, server time) the daily cron is intended to run at.
     // Actual trigger is Render Cron Job / node-cron; this is just documentation/metadata.
     dailySendHour: Number(process.env.FOLLOWUP_HOUR || 9),
+  },
+
+  // --- Call coaching + follow-up system ---
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
+  },
+  assemblyai: {
+    apiKey: process.env.ASSEMBLYAI_API_KEY,
+  },
+  callFollowUp: {
+    // A phone contact with no reply after this many hours becomes "overdue"
+    hoursUntilOverdue: Number(process.env.CALL_FOLLOWUP_HOURS || 48),
   },
 };

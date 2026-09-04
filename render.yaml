@@ -48,3 +48,25 @@ services:
           type: web
           name: clearance-outreach-api
           envVarKey: CRON_SECRET
+
+  - type: cron
+    name: clearance-outreach-call-sync
+    runtime: node
+    schedule: "0 * * * *" # every hour — pulls new calls, transcribes, scores
+    buildCommand: npm install
+    startCommand: >
+      node -e "
+      require('dotenv').config();
+      fetch(process.env.SELF_URL + '/api/cron/sync-calls', {
+        method: 'POST',
+        headers: { 'x-cron-secret': process.env.CRON_SECRET }
+      }).then(r => r.json()).then(console.log).catch(e => { console.error(e); process.exit(1); });
+      "
+    envVars:
+      - key: SELF_URL
+        sync: false # same web service URL as above
+      - key: CRON_SECRET
+        fromService:
+          type: web
+          name: clearance-outreach-api
+          envVarKey: CRON_SECRET
