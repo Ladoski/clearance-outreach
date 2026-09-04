@@ -13,10 +13,9 @@ router.post('/daily-follow-up', requireCronSecret, async (req, res) => {
 });
 
 // POST /api/cron/sync-calls  (header x-cron-secret required)
-// Pulls new RingCentral calls from the last hour, transcribes + scores any with a recording.
+// Re-scans the lookback window, transcribes + scores a batch of calls that need it.
 router.post('/sync-calls', requireCronSecret, async (req, res) => {
-  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const summary = await runCallSync(since);
+  const summary = await runCallSync();
   res.json(summary);
 });
 

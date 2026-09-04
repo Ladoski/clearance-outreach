@@ -545,6 +545,9 @@ async function viewCall(id) {
       if (s.next_call_recommendation) html += '<h3>Next call</h3><div class="recommendation">' + s.next_call_recommendation + '</div>';
     } else {
       html += '<p class="empty-note">Status: ' + call.transcript_status + '. ' + (call.transcript_status === 'processing' ? 'Still transcribing/scoring — check back shortly.' : call.transcript_status === 'no_recording' ? 'No recording was available for this call.' : '') + '</p>';
+      if (call.transcript_status === 'failed' && call.last_error) {
+        html += '<div class="recommendation">' + call.last_error.replace(/</g, '&lt;') + '</div>';
+      }
     }
 
     if (call.transcript) {
@@ -580,7 +583,11 @@ async function syncCalls() {
   btn.textContent = 'Syncing…';
   try {
     const json = await api('/api/calls/sync', { method: 'POST' });
-    alert('Synced. ' + json.newCalls + ' new call(s), ' + json.processed + ' analyzed.');
+    let msg = 'Synced. ' + json.newCalls + ' new call(s), ' + json.processed + ' analyzed.';
+    if (json.remaining > 0) {
+      msg += ' ' + json.remaining + ' more still need processing — click Sync calls again to continue (or wait for the hourly auto-sync).';
+    }
+    alert(msg);
     loadAll();
   } catch (err) {
     alert('Sync failed: ' + err.message);

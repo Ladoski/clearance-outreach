@@ -106,10 +106,12 @@ CREATE TABLE IF NOT EXISTS calls (
   recording_id TEXT,
   transcript TEXT,
   transcript_status TEXT NOT NULL DEFAULT 'pending', -- pending | processing | done | no_recording | failed
+  last_error TEXT,                -- populated when transcript_status = 'failed', visible in the UI
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_calls_contact ON calls(contact_id);
 CREATE INDEX IF NOT EXISTS idx_calls_start_time ON calls(start_time DESC);
+ALTER TABLE calls ADD COLUMN IF NOT EXISTS last_error TEXT;
 
 CREATE TABLE IF NOT EXISTS call_scores (
   id SERIAL PRIMARY KEY,

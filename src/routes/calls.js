@@ -7,9 +7,9 @@ const { analyzeTranscript } = require('../lib/callAnalysis');
 const router = express.Router();
 router.use(requireAdmin);
 
-/** POST /api/calls/sync?since=2026-09-03T00:00:00Z  (since optional, defaults to last 24h) */
+/** POST /api/calls/sync - re-scans the lookback window, processes a batch that needs work */
 router.post('/sync', async (req, res) => {
-  const summary = await runCallSync(req.query.since);
+  const summary = await runCallSync();
   res.json(summary);
 });
 

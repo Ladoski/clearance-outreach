@@ -74,4 +74,12 @@ module.exports = {
     // A phone contact with no reply after this many hours becomes "overdue"
     hoursUntilOverdue: Number(process.env.CALL_FOLLOWUP_HOURS || 48),
   },
+  callSync: {
+    // Always re-scan this far back so stuck/failed calls get retried, not just brand-new ones
+    lookbackHours: Number(process.env.CALL_SYNC_LOOKBACK_HOURS || 48),
+    // Cap how many calls get transcribed+scored per sync request, so a big backlog
+    // can't make one HTTP request run long enough to hit a platform timeout.
+    // Click Sync calls again (or wait for the hourly cron) to work through the rest.
+    maxProcessPerRun: Number(process.env.CALL_SYNC_BATCH_SIZE || 3),
+  },
 };

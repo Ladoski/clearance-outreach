@@ -1,4 +1,5 @@
 const db = require('./db');
+const config = require('../config');
 const { syncRecentCalls, downloadRecording } = require('./ringcentralCalls');
 const { transcribeAudioBuffer } = require('./transcription');
 const { analyzeTranscript } = require('./callAnalysis');
@@ -11,7 +12,7 @@ async function processCall(callId, recordingContentUri) {
     const transcript = await transcribeAudioBuffer(buffer);
 
     await db.query(
-      `UPDATE calls SET transcript = $1, transcript_status = 'done' WHERE id = $2`,
+      `UPDATE calls SET transcript = $1, transcript_status = 'done', last_error = NULL WHERE id = $2`,
       [transcript, callId]
     );
 
@@ -35,28 +36,41 @@ async function processCall(callId, recordingContentUri) {
     );
     return { callId, ok: true, score: scorecard.overall_score };
   } catch (err) {
-    await db.query(`UPDATE calls SET transcript_status = 'failed' WHERE id = $1`, [callId]);
+    // eslint-disable-next-line no-console
+    console.error(`[callPipeline] call ${callId} failed:`, err.message);
+    await db.query(
+      `UPDATE calls SET transcript_status = 'failed', last_error = $1 WHERE id = $2`,
+      [err.message.slice(0, 2000), callId]
+    );
     return { callId, ok: false, error: err.message };
   }
 }
 
 /**
- * Full run: pull new calls since `sinceISO` (default: last 24h), then
- * transcribe + score every one that has a recording. Runs synchronously
- * and can take a few minutes if there are several calls with recordings —
- * that's expected for now (no background job queue yet).
+ * Full run: re-scan the lookback window (see config.callSync.lookbackHours),
+ * saving any brand-new calls AND re-surfacing any call that previously got
+ * stuck or failed. Only processes up to config.callSync.maxProcessPerRun of
+ * them per call to this function, so a big backlog can't make a single HTTP
+ * request run long enough to hit a platform timeout — call this again (or
+ * let the hourly cron job run) to keep working through the rest.
  */
-async function runCallSync(sinceISO) {
-  const since = sinceISO || new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-  const { fetched, newCalls } = await syncRecentCalls(since);
+async function runCallSync() {
+  const { fetched, newlyInserted, toProcess } = await syncRecentCalls();
 
+  const batch = toProcess.slice(0, config.callSync.maxProcessPerRun);
   const results = [];
-  for (const { call, recordingContentUri } of newCalls) {
-    if (!recordingContentUri) continue; // no recording available for this call
+  for (const { call, recordingContentUri } of batch) {
     results.push(await processCall(call.id, recordingContentUri));
   }
 
-  return { fetched, newCalls: newCalls.length, processed: results.length, results };
+  return {
+    fetched,
+    newCalls: newlyInserted,
+    pendingBeforeThisRun: toProcess.length,
+    processed: results.length,
+    remaining: toProcess.length - results.length,
+    results,
+  };
 }
 
 module.exports = { runCallSync, processCall };
