@@ -18,11 +18,12 @@ function getPlatform() {
 
 async function ensureLoggedIn() {
   const p = getPlatform();
-  const loggedIn = await p.loggedIn().catch(() => false);
-  if (!loggedIn) {
-    // JWT auth is recommended for server-to-server apps (no password to store)
-    await p.login({ jwt: config.ringcentral.jwt });
-  }
+  // Deliberately NOT using p.loggedIn() here: on a cold process with zero
+  // stored tokens, the SDK's internal ensureLoggedIn() sees an invalid
+  // access token and tries to REFRESH before ever logging in, which throws
+  // "Refresh token is missing". JWT bearer login is cheap and stateless,
+  // so just log in fresh every time instead of pre-checking status.
+  await p.login({ jwt: config.ringcentral.jwt });
   return p;
 }
 
