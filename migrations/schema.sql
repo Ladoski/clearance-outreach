@@ -71,3 +71,57 @@ CREATE TABLE IF NOT EXISTS offers (
 );
 
 CREATE INDEX IF NOT EXISTS idx_offers_status ON offers(status);
+
+-- ===================================================================
+-- Call coaching + follow-up system (separate from the leads/pricing
+-- flow above — this tracks PHONE CONTACTS, not price-negotiation leads)
+-- ===================================================================
+
+CREATE TABLE IF NOT EXISTS contacts (
+  id SERIAL PRIMARY KEY,
+  name TEXT,
+  phone TEXT,                    -- E.164, matched against RingCentral call log
+  email TEXT,
+  company TEXT,
+  status TEXT NOT NULL DEFAULT 'new',   -- new | contacted | engaged | follow_up | no_response | won | lost
+  temperature TEXT NOT NULL DEFAULT 'warm', -- hot | warm | cold
+  notes TEXT,
+  last_contact_at TIMESTAMPTZ,
+  next_follow_up_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_contacts_phone ON contacts(phone);
+CREATE INDEX IF NOT EXISTS idx_contacts_next_follow_up ON contacts(next_follow_up_at);
+CREATE INDEX IF NOT EXISTS idx_contacts_status ON contacts(status);
+
+CREATE TABLE IF NOT EXISTS calls (
+  id SERIAL PRIMARY KEY,
+  contact_id INTEGER REFERENCES contacts(id) ON DELETE SET NULL,
+  rc_call_id TEXT UNIQUE,         -- RingCentral's call session id, prevents duplicate sync
+  direction TEXT,                 -- Inbound | Outbound
+  phone_number TEXT,
+  start_time TIMESTAMPTZ,
+  duration_seconds INTEGER,
+  recording_id TEXT,
+  transcript TEXT,
+  transcript_status TEXT NOT NULL DEFAULT 'pending', -- pending | processing | done | no_recording | failed
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_calls_contact ON calls(contact_id);
+CREATE INDEX IF NOT EXISTS idx_calls_start_time ON calls(start_time DESC);
+
+CREATE TABLE IF NOT EXISTS call_scores (
+  id SERIAL PRIMARY KEY,
+  call_id INTEGER NOT NULL REFERENCES calls(id) ON DELETE CASCADE,
+  overall_score INTEGER,
+  categories JSONB,               -- {opening, discovery, qualification, objection_handling, closing, communication}
+  strengths JSONB,                -- array of strings
+  weaknesses JSONB,                -- array of strings
+  missed_opportunities JSONB,      -- array of strings
+  customer_signals JSONB,           -- array of strings
+  coaching_priority TEXT,
+  next_call_recommendation TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_call_scores_call ON call_scores(call_id);
