@@ -107,10 +107,32 @@ CREATE TABLE IF NOT EXISTS calls (
   transcript TEXT,
   transcript_status TEXT NOT NULL DEFAULT 'pending', -- pending | processing | done | no_recording | failed
   last_error TEXT,                -- populated when transcript_status = 'failed', visible in the UI
+  call_status TEXT NOT NULL DEFAULT 'open',          -- open | pending | follow_up | won | lost | no_response
+  call_category TEXT,                                -- sales_call | discovery | objection | closing | negotiation | demo
+  is_model_call BOOLEAN DEFAULT false,               -- true if this call should be used as a reference/coaching example
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_calls_contact ON calls(contact_id);
 CREATE INDEX IF NOT EXISTS idx_calls_start_time ON calls(start_time DESC);
+ALTER TABLE calls ADD COLUMN IF NOT EXISTS call_status TEXT DEFAULT 'open';
+ALTER TABLE calls ADD COLUMN IF NOT EXISTS call_category TEXT;
+ALTER TABLE calls ADD COLUMN IF NOT EXISTS is_model_call BOOLEAN DEFAULT false;
+CREATE INDEX IF NOT EXISTS idx_calls_status ON calls(call_status);
+CREATE INDEX IF NOT EXISTS idx_calls_category ON calls(call_category);
+CREATE INDEX IF NOT EXISTS idx_calls_model ON calls(is_model_call);
+
+-- Call bank notes and follow-up templates
+CREATE TABLE IF NOT EXISTS call_bank_notes (
+  id SERIAL PRIMARY KEY,
+  call_id INTEGER NOT NULL REFERENCES calls(id) ON DELETE CASCADE,
+  bank_reason TEXT,                   -- why this call is in the bank (e.g., "excellent objection handling", "perfect discovery")
+  text_option_1 TEXT,                 -- pre-drafted follow-up text for this call's situation
+  text_option_2 TEXT,
+  text_option_3 TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_bank_notes_call ON call_bank_notes(call_id);
 ALTER TABLE calls ADD COLUMN IF NOT EXISTS last_error TEXT;
 
 CREATE TABLE IF NOT EXISTS call_scores (

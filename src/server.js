@@ -14,6 +14,7 @@ const adminRoutes = require('./routes/admin');
 const callsRoutes = require('./routes/calls');
 const contactsRoutes = require('./routes/contacts');
 const followupsRoutes = require('./routes/followups');
+const callBankRoutes = require('./routes/call-bank');
 
 const app = express();
 app.use(express.json());
@@ -31,6 +32,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/calls', callsRoutes);
 app.use('/api/contacts', contactsRoutes);
 app.use('/api/followups', followupsRoutes);
+app.use('/api/call-bank', callBankRoutes);
 
 // Catches any error from routes (including async ones — Express 5 auto-forwards
 // rejected promises here) and returns clean JSON instead of crashing the server.

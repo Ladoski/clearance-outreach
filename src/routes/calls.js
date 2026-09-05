@@ -92,4 +92,25 @@ router.post('/:id/analyze', async (req, res) => {
   });
 });
 
+/** PATCH /api/calls/:id - update status/category/model_call/etc */
+router.patch('/:id', async (req, res) => {
+  const allowed = ['call_status', 'call_category', 'is_model_call'];
+  const sets = [];
+  const params = [];
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) {
+      params.push(req.body[key]);
+      sets.push(`${key} = $${params.length}`);
+    }
+  }
+  if (!sets.length) return res.status(400).json({ error: 'No updatable fields provided' });
+  params.push(req.params.id);
+  const { rows } = await db.query(
+    `UPDATE calls SET ${sets.join(', ')} WHERE id = $${params.length} RETURNING *`,
+    params
+  );
+  if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+  res.json(rows[0]);
+});
+
 module.exports = router;
