@@ -15,6 +15,8 @@ const callsRoutes = require('./routes/calls');
 const contactsRoutes = require('./routes/contacts');
 const followupsRoutes = require('./routes/followups');
 const callBankRoutes = require('./routes/call-bank');
+const messageSequencesRoutes = require('./routes/message-sequences');
+const campaignsRoutes = require('./routes/campaigns');
 
 const app = express();
 app.use(express.json());
@@ -33,6 +35,8 @@ app.use('/api/calls', callsRoutes);
 app.use('/api/contacts', contactsRoutes);
 app.use('/api/followups', followupsRoutes);
 app.use('/api/call-bank', callBankRoutes);
+app.use('/api/message-sequences', messageSequencesRoutes);
+app.use('/api/campaigns', campaignsRoutes);
 
 // Catches any error from routes (including async ones — Express 5 auto-forwards
 // rejected promises here) and returns clean JSON instead of crashing the server.

@@ -62,9 +62,22 @@ services:
         headers: { 'x-cron-secret': process.env.CRON_SECRET }
       }).then(r => r.json()).then(console.log).catch(e => { console.error(e); process.exit(1); });
       "
+  - type: cron
+    name: clearance-outreach-send-sequences
+    runtime: node
+    schedule: "0 * * * *" # every hour — sends any follow-up messages that are due
+    buildCommand: npm install
+    startCommand: >
+      node -e "
+      require('dotenv').config();
+      fetch(process.env.SELF_URL + '/api/cron/send-sequences', {
+        method: 'POST',
+        headers: { 'x-cron-secret': process.env.CRON_SECRET }
+      }).then(r => r.json()).then(console.log).catch(e => { console.error(e); process.exit(1); });
+      "
     envVars:
       - key: SELF_URL
-        sync: false # same web service URL as above
+        sync: false # same web service URL as the call sync
       - key: CRON_SECRET
         fromService:
           type: web

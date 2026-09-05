@@ -19,4 +19,12 @@ router.post('/sync-calls', requireCronSecret, async (req, res) => {
   res.json(summary);
 });
 
+// POST /api/cron/send-sequences  (header x-cron-secret required)
+// Checks all active contact follow-up sequences and sends any messages that are due.
+router.post('/send-sequences', requireCronSecret, async (req, res) => {
+  const { sendSequenceMessages } = require('../lib/messageSequences');
+  const summary = await sendSequenceMessages();
+  res.json(summary);
+});
+
 module.exports = router;
