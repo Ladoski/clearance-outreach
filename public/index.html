@@ -3,413 +3,332 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Clearance Outreach</title>
+<title>Toro Steel Buildings - Sales CRM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #17181B;
-    --panel: #1F2124;
-    --hairline: #33302A;
-    --brass: #AD8A55;
-    --brass-dim: #7C6640;
-    --ivory: #EDE7DC;
-    --muted: #8C8478;
-    --sage: #7C9473;
-    --rust: #9B5A46;
-    --amber: #C9A227;
-  }
+:root {
+  --bg: #17181B;
+  --panel: #1F2124;
+  --hairline: #33302A;
+  --brass: #AD8A55;
+  --ivory: #EDE7DC;
+  --muted: #8C8478;
+  --sage: #7C9473;
+  --rust: #9B5A46;
+}
 
-  * { box-sizing: border-box; }
-  ::selection { background: var(--brass-dim); color: var(--ivory); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ivory); font-family: 'Inter', -apple-system, sans-serif; font-size: 14px; line-height: 1.5; }
 
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ivory);
-    font-family: 'Inter', -apple-system, sans-serif;
-    font-size: 15px;
-    line-height: 1.5;
-  }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 280px; background: var(--panel); border-right: 1px solid var(--hairline); padding: 24px; overflow-y: auto; }
+.main { flex: 1; display: flex; flex-direction: column; }
+.header { background: var(--panel); border-bottom: 1px solid var(--hairline); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+.content { flex: 1; padding: 32px; overflow-y: auto; }
 
-  a { color: var(--brass); }
+.logo { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin-bottom: 32px; }
+.nav-item { display: block; padding: 12px 14px; border-radius: 4px; margin-bottom: 8px; cursor: pointer; color: var(--muted); transition: all 0.2s; border-left: 3px solid transparent; }
+.nav-item:hover { background: rgba(173,138,85,0.1); color: var(--brass); }
+.nav-item.active { background: rgba(173,138,85,0.15); color: var(--brass); border-left-color: var(--brass); }
 
-  .page { max-width: 1400px; margin: 0 auto; padding: 32px; }
+.stat-box { background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 20px; margin-bottom: 16px; }
+.stat-num { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; color: var(--brass); }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
-  header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 24px;
-    margin-bottom: 36px;
-  }
+.lead-card { background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+.lead-card:hover { background: rgba(173,138,85,0.08); border-color: var(--brass); }
+.lead-name { font-weight: 500; color: var(--ivory); }
+.lead-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.lead-score { display: inline-block; background: var(--brass); color: #17181B; padding: 4px 8px; border-radius: 12px; font-weight: 600; font-size: 11px; }
 
-  .wordmark { display: flex; align-items: baseline; gap: 14px; }
-  .mark { width: 30px; height: 30px; flex-shrink: 0; color: var(--brass); }
+button { background: transparent; color: var(--brass); border: 1px solid var(--brass); padding: 10px 16px; border-radius: 4px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+button:hover { background: var(--brass); color: #17181B; }
+button:disabled { opacity: 0.5; cursor: default; }
 
-  h1 {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 28px;
-    letter-spacing: 0.2px;
-    margin: 0;
-    color: var(--ivory);
-  }
+input[type=text], select { background: var(--panel); border: 1px solid var(--hairline); color: var(--ivory); padding: 10px; border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
+input[type=text]:focus { border-color: var(--brass); }
 
-  .subtitle {
-    font-size: 13px;
-    color: var(--muted);
-    margin-top: 4px;
-    font-style: italic;
-    font-family: 'Fraunces', serif;
-  }
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; }
+.modal.open { display: flex; align-items: center; justify-content: center; }
+.modal-content { background: var(--panel); border: 1px solid var(--hairline); border-radius: 8px; padding: 32px; max-width: 500px; width: 90%; }
+.modal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+.modal-field { margin-bottom: 16px; }
+.modal-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+.modal-field input, .modal-field select { width: 100%; }
+.modal-buttons { display: flex; gap: 10px; margin-top: 24px; }
+.modal-buttons button { flex: 1; }
 
-  .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-
-  input[type=text], input[type=file], select {
-    background: var(--panel);
-    border: 1px solid var(--hairline);
-    color: var(--ivory);
-    padding: 10px 14px;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    border-radius: 3px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  input[type=text]:focus, input[type=file]:focus, select:focus { border-color: var(--brass); }
-  input[type=text]::placeholder { color: var(--muted); }
-
-  button {
-    background: transparent;
-    color: var(--brass);
-    border: 1px solid var(--brass-dim);
-    padding: 10px 16px;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-  }
-  button:hover { background: var(--brass); color: #17181B; border-color: var(--brass); }
-  button:disabled { opacity: 0.5; cursor: default; }
-
-  .tabs {
-    display: flex;
-    gap: 24px;
-    border-bottom: 1px solid var(--hairline);
-    margin-bottom: 32px;
-  }
-  .tab {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-family: 'Inter', sans-serif;
-    font-size: 13.5px;
-    font-weight: 500;
-    padding: 0 0 14px;
-    cursor: pointer;
-    border-radius: 0;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -1px;
-  }
-  .tab:hover { background: none; color: var(--ivory); }
-  .tab.active { color: var(--brass); border-bottom-color: var(--brass); }
-
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  .empty-note { color: var(--muted); font-style: italic; font-size: 13px; }
-
-  /* Campaign cards */
-  .campaign-card {
-    background: var(--panel);
-    border: 1px solid var(--hairline);
-    border-radius: 4px;
-    padding: 18px;
-    margin-bottom: 14px;
-    cursor: pointer;
-  }
-  .campaign-card:hover { background: rgba(173,138,85,0.08); border-color: var(--brass-dim); }
-
-  .campaign-top { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
-  .campaign-name { font-family: 'Fraunces', serif; font-weight: 500; font-size: 15px; color: var(--ivory); }
-  .campaign-region { font-size: 11px; color: var(--brass); font-weight: 600; letter-spacing: 0.3px; margin-top: 2px; }
-  .campaign-meta { font-size: 12px; color: var(--muted); margin-top: 8px; }
-  .campaign-actions { display: flex; gap: 6px; margin-top: 10px; }
-  .campaign-actions button { flex: 1; padding: 6px 10px; font-size: 11px; }
-
-  /* Campaign form */
-  .campaign-form {
-    background: var(--panel);
-    border: 1px solid var(--hairline);
-    border-radius: 4px;
-    padding: 20px;
-    margin-bottom: 24px;
-  }
-  .form-group {
-    margin-bottom: 14px;
-  }
-  .form-group label {
-    display: block;
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 6px;
-    font-weight: 500;
-  }
-  .form-group input,
-  .form-group select {
-    width: 100%;
-    padding: 10px;
-  }
-  .form-group button { width: 100%; }
-
-  .progress-bar {
-    height: 6px;
-    background: var(--hairline);
-    border-radius: 3px;
-    margin: 8px 0;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--brass);
-    transition: width 0.3s;
-  }
-
-  @media (max-width: 640px) {
-    .page { padding: 16px; }
-    header { flex-direction: column; align-items: flex-start; }
-    .controls { width: 100%; flex-wrap: wrap; }
-    input[type=text], input[type=file], select { width: 100%; }
-  }
+h2 { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 20px; }
 </style>
 </head>
 <body>
-<div class="page">
-  <header>
-    <div class="wordmark">
-      <svg class="mark" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4 26V10L15 3L26 10V26" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-        <path d="M11 26V16H19V26" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-      </svg>
-      <div>
-        <h1>Clearance Outreach</h1>
-        <div class="subtitle">call coaching + campaigns</div>
+<div class="layout">
+  <div class="sidebar">
+    <div class="logo">Toro CRM</div>
+    <nav>
+      <div class="nav-item active" onclick="showView('dashboard')">📊 Dashboard</div>
+      <div class="nav-item" onclick="showView('queue')">🔥 Start My Day</div>
+      <div class="nav-item" onclick="showView('leads')">👥 All Leads</div>
+      <div class="nav-item" onclick="showView('campaigns')">📢 Campaigns</div>
+      <div class="nav-item" onclick="showView('inventory')">🏢 Inventory</div>
+    </nav>
+    <hr style="border: none; border-top: 1px solid var(--hairline); margin: 24px 0;">
+    <input type="text" id="apiKey" placeholder="Admin key" style="width: 100%; margin-bottom: 10px;">
+    <button onclick="loadDashboard()" style="width: 100%;">Load</button>
+  </div>
+
+  <div class="main">
+    <div class="header">
+      <h1 style="font-family: 'Fraunces', serif; font-size: 24px;">Toro Steel Buildings Sales CRM</h1>
+      <div style="font-size: 12px; color: var(--muted);">Connected</div>
+    </div>
+
+    <div class="content">
+      <!-- Dashboard View -->
+      <div id="view-dashboard" style="display: block;">
+        <h2>Today's Metrics</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div class="stat-box">
+            <div class="stat-num" id="stat-msgs">0</div>
+            <div class="stat-label">Messages Today</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="stat-offers">0</div>
+            <div class="stat-label">Active Offers</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-num" id="stat-score">0</div>
+            <div class="stat-label">Avg Lead Score</div>
+          </div>
+        </div>
+
+        <h2 style="margin-top: 32px;">Lead Status Breakdown</h2>
+        <div id="status-breakdown"></div>
+      </div>
+
+      <!-- Start My Day View -->
+      <div id="view-queue" style="display: none;">
+        <h2>🔥 Start My Day - Your Priority Queue</h2>
+        <p style="color: var(--muted); margin-bottom: 20px;">Sorted by score + engagement. Click to see full details.</p>
+        <div id="queue-list"></div>
+      </div>
+
+      <!-- All Leads View -->
+      <div id="view-leads" style="display: none;">
+        <h2>All Leads</h2>
+        <input type="text" id="search-leads" placeholder="Search by name or phone..." style="width: 100%; margin-bottom: 20px;">
+        <div id="leads-list"></div>
+      </div>
+
+      <!-- Campaigns View -->
+      <div id="view-campaigns" style="display: none;">
+        <h2>Campaigns</h2>
+        <button onclick="newCampaign()">+ New Campaign</button>
+        <div id="campaigns-list" style="margin-top: 20px;"></div>
+      </div>
+
+      <!-- Inventory View -->
+      <div id="view-inventory" style="display: none;">
+        <h2>Inventory</h2>
+        <div id="inventory-list"></div>
       </div>
     </div>
-    <div class="controls">
-      <input type="text" id="apiKey" placeholder="Admin key" />
-      <button onclick="loadAll()">Load</button>
-      <button onclick="syncCalls()" id="syncBtn">Sync calls</button>
+  </div>
+</div>
+
+<!-- Lead Detail Modal -->
+<div class="modal" id="leadModal">
+  <div class="modal-content">
+    <div class="modal-title" id="modalTitle"></div>
+    <div id="modalBody"></div>
+    <div class="modal-buttons">
+      <button onclick="closeLead()">Close</button>
     </div>
-  </header>
-
-  <div class="tabs">
-    <button class="tab active" data-tab="calls" onclick="showTab('calls')">Calls & Coaching</button>
-    <button class="tab" data-tab="campaigns" onclick="showTab('campaigns')">Campaigns</button>
-  </div>
-
-  <div class="tab-panel active" id="tab-calls">
-    <div id="callsContent"><p class="empty-note">Enter admin key and click Load.</p></div>
-  </div>
-
-  <div class="tab-panel" id="tab-campaigns">
-    <div id="campaignsContent"><p class="empty-note">Enter admin key and click Load.</p></div>
   </div>
 </div>
 
 <script>
-let currentTab = 'calls';
+let currentView = 'dashboard';
 
-function showTab(name) {
-  currentTab = name;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
-  if (name === 'campaigns') loadCampaigns();
-}
-
-async function api(path, opts) {
+function api(path, opts = {}) {
   const key = document.getElementById('apiKey').value;
-  const res = await fetch(path, { ...opts, headers: { ...(opts && opts.headers), 'x-api-key': key } });
-  if (!res.ok) throw new Error('Request failed: ' + res.status);
-  return res.json();
+  return fetch(path, {
+    ...opts,
+    headers: { ...(opts.headers || {}), 'x-api-key': key }
+  }).then(r => r.ok ? r.json() : Promise.reject(r.status));
 }
 
-async function loadAll() {
+function showView(view) {
+  currentView = view;
+  document.querySelectorAll('[id^="view-"]').forEach(el => el.style.display = 'none');
+  document.getElementById('view-' + view).style.display = 'block';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.target.classList.add('active');
+
+  if (view === 'queue') loadQueue();
+  else if (view === 'leads') loadLeads();
+  else if (view === 'campaigns') loadCampaigns();
+  else if (view === 'inventory') loadInventory();
+}
+
+async function loadDashboard() {
   try {
-    const calls = await api('/api/calls');
-    renderCalls(calls);
+    const data = await api('/api/dashboard');
+    document.getElementById('stat-msgs').textContent = data.metrics.messages_today;
+    document.getElementById('stat-offers').textContent = data.metrics.active_offers;
+    document.getElementById('stat-score').textContent = data.metrics.avg_lead_score;
+
+    let html = '';
+    for (const [status, count] of Object.entries(data.leads_by_status)) {
+      html += `<div class="stat-box">${status}: <strong>${count}</strong></div>`;
+    }
+    document.getElementById('status-breakdown').innerHTML = html;
   } catch (err) {
-    document.getElementById('callsContent').innerHTML = '<p class="empty-note">Error: ' + err.message + '</p>';
+    alert('Error loading dashboard');
   }
 }
 
-function renderCalls(calls) {
-  let html = '<p class="empty-note">Calls coming soon...</p>';
-  if (calls && calls.length) {
-    html = '<p>' + calls.length + ' calls in system</p>';
-  }
-  document.getElementById('callsContent').innerHTML = html;
-}
-
-async function syncCalls() {
-  const btn = document.getElementById('syncBtn');
-  btn.disabled = true;
-  btn.textContent = 'Syncing…';
+async function loadQueue() {
   try {
-    const json = await api('/api/calls/sync', { method: 'POST' });
-    alert('Synced. ' + json.newCalls + ' new, ' + json.processed + ' analyzed.' + (json.remaining ? ' ' + json.remaining + ' more pending.' : ''));
-    loadAll();
-  } catch (err) {
-    alert('Sync failed: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Sync calls';
-  }
-}
-
-async function loadCampaigns() {
-  try {
-    const campaigns = await api('/api/campaigns');
-    const sequences = await api('/api/message-sequences/sequences');
-    renderCampaigns(campaigns, sequences);
-  } catch (err) {
-    document.getElementById('campaignsContent').innerHTML = '<p class="empty-note">Error: ' + err.message + '</p>';
-  }
-}
-
-function renderCampaigns(campaigns, sequences) {
-  let html = `
-    <div class="campaign-form">
-      <h3 style="margin-top: 0; font-family: Fraunces; font-size: 16px; color: var(--ivory);">Create New Campaign</h3>
-      <div class="form-group">
-        <label>Campaign Name</label>
-        <input type="text" id="campaignName" placeholder="e.g., 30x50 CDN Q4">
-      </div>
-      <div class="form-group">
-        <label>Region</label>
-        <select id="campaignRegion">
-          <option value="">-- Select --</option>
-          <option value="USA">USA</option>
-          <option value="Canada">Canada</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Message Sequence</label>
-        <select id="campaignSequence">
-          <option value="">-- Select --</option>
-          ${sequences.map(s => '<option value="' + s.id + '">' + s.name + '</option>').join('')}
-        </select>
-      </div>
-      <button onclick="createCampaign()">Create Campaign</button>
-    </div>
-
-    <h3 style="font-family: Fraunces; font-size: 16px; color: var(--ivory); margin: 28px 0 16px;">Active Campaigns</h3>
-  `;
-
-  if (!campaigns.length) {
-    html += '<p class="empty-note">No campaigns yet. Create one above.</p>';
-  } else {
-    for (const c of campaigns) {
-      const percent = c.total_leads > 0 ? Math.round((c.completed_leads / c.total_leads) * 100) : 0;
+    const data = await api('/api/dashboard/start-day');
+    let html = '';
+    for (const lead of data.queue) {
       html += `
-        <div class="campaign-card">
-          <div class="campaign-top">
+        <div class="lead-card" onclick="viewLead(${lead.id})">
+          <div style="display: flex; justify-content: space-between; align-items: start;">
             <div>
-              <div class="campaign-name">${c.name}</div>
-              <div class="campaign-region">${c.region}</div>
-              <div class="campaign-meta">${c.sequence_name} • ${c.total_leads} leads • ${c.status}</div>
+              <div class="lead-name">${lead.name || 'Unknown'}</div>
+              <div class="lead-meta">${lead.phone || ''} • ${lead.status}</div>
+              ${lead.company ? '<div class="lead-meta">' + lead.company + '</div>' : ''}
             </div>
+            <span class="lead-score">${lead.score}/100</span>
           </div>
-          <div class="progress-bar"><div class="progress-fill" style="width: ${percent}%"></div></div>
-          <div style="font-size: 11px; color: var(--muted); margin-bottom: 10px;">${c.completed_leads} of ${c.total_leads} completed (${percent}%)</div>
-          <div class="campaign-actions">
-            <button onclick="uploadCSV(${c.id})">📤 Upload CSV</button>
-            <button onclick="startCampaign(${c.id})">▶ Start</button>
-            <button onclick="viewCampaign(${c.id})">👁 View</button>
-          </div>
+          ${lead.last_message ? '<div class="lead-meta" style="margin-top: 8px; font-style: italic;">"' + lead.last_message.substring(0, 60) + '..."</div>' : ''}
         </div>
       `;
     }
-  }
-
-  document.getElementById('campaignsContent').innerHTML = html;
-}
-
-async function createCampaign() {
-  const name = document.getElementById('campaignName').value;
-  const region = document.getElementById('campaignRegion').value;
-  const sequenceId = document.getElementById('campaignSequence').value;
-
-  if (!name || !region || !sequenceId) return alert('Fill all fields');
-
-  try {
-    await api('/api/campaigns', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, region, sequenceId }),
-    });
-    alert('Campaign created!');
-    loadCampaigns();
+    document.getElementById('queue-list').innerHTML = html;
   } catch (err) {
-    alert('Error: ' + err.message);
+    alert('Error loading queue');
   }
 }
 
-async function uploadCSV(campaignId) {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.csv';
-  input.onchange = async (e) => {
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const key = document.getElementById('apiKey').value;
-      const res = await fetch('/api/campaigns/' + campaignId + '/upload-leads', {
-        method: 'POST',
-        headers: { 'x-api-key': key },
-        body: formData,
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'Upload failed');
-      alert('Uploaded! ' + json.enrolled + ' leads enrolled.');
-      loadCampaigns();
-    } catch (err) {
-      alert('Upload failed: ' + err.message);
+async function loadLeads() {
+  try {
+    const data = await api('/api/leads');
+    let html = '';
+    for (const lead of data.slice(0, 100)) {
+      html += `
+        <div class="lead-card" onclick="viewLead(${lead.id})">
+          <div class="lead-name">${lead.name || 'Unknown'}</div>
+          <div class="lead-meta">${lead.phone} • ${lead.status}</div>
+        </div>
+      `;
     }
-  };
-  input.click();
-}
-
-async function startCampaign(campaignId) {
-  if (!confirm('Start sending messages to all leads in this campaign?')) return;
-
-  try {
-    const json = await api('/api/campaigns/' + campaignId + '/start-all', { method: 'POST' });
-    alert('Started! ' + json.started + ' leads activated.');
-    loadCampaigns();
+    document.getElementById('leads-list').innerHTML = html;
   } catch (err) {
-    alert('Error: ' + err.message);
+    alert('Error loading leads');
   }
 }
 
-async function viewCampaign(campaignId) {
+async function viewLead(id) {
   try {
-    const data = await api('/api/campaigns/' + campaignId + '/progress');
-    alert(`Campaign: ${data.campaign.name}
-Total Leads: ${data.stats.totalLeads}
-Enrolled: ${data.stats.enrolledInSequence}
-Completed: ${data.stats.completedSequence}`);
+    const data = await api('/api/dashboard/lead/' + id);
+    const l = data.lead;
+    const b = data.building;
+
+    let html = `
+      <div style="margin-bottom: 20px;">
+        <strong>${l.name}</strong> • ${l.phone}<br>
+        Status: <strong>${l.status}</strong> | Score: <strong>${data.score?.score || 0}/100</strong>
+      </div>
+    `;
+
+    if (b) html += `<div style="margin-bottom: 20px; padding: 12px; background: rgba(173,138,85,0.1); border-radius: 4px;">
+      <strong>${b.name}</strong><br>
+      ${b.width_ft}' x ${b.length_ft}' x ${b.eave_height_ft}' eave<br>
+      $${b.initial_price} → $${b.floor_price || (b.initial_price * 0.6)}<br>
+    </div>`;
+
+    if (data.messages.length) {
+      html += `<strong>Recent Messages:</strong><div style="margin-top: 10px;">`;
+      for (const msg of data.messages.slice(0, 5)) {
+        const dir = msg.direction === 'inbound' ? '→ ' : '← ';
+        html += `<div style="margin-bottom: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 3px; font-size: 12px;">
+          ${dir} ${msg.body.substring(0, 100)}
+        </div>`;
+      }
+      html += '</div>';
+    }
+
+    html += `
+      <div class="modal-field" style="margin-top: 20px;">
+        <label>Update Status</label>
+        <select id="statusSelect">
+          <option value="new">New</option>
+          <option value="replied">Replied</option>
+          <option value="negotiating">Negotiating</option>
+          <option value="agreed">Agreed</option>
+          <option value="cold">Cold</option>
+          <option value="dead">Dead</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Current Price</label>
+        <input type="text" id="priceInput" value="${l.current_price || ''}" placeholder="$">
+      </div>
+      <button onclick="updateLead(${id})" style="width: 100%; margin-top: 20px;">Save Changes</button>
+    `;
+
+    document.getElementById('modalTitle').textContent = l.name;
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('leadModal').classList.add('open');
   } catch (err) {
-    alert('Error: ' + err.message);
+    alert('Error loading lead');
   }
 }
+
+async function updateLead(id) {
+  const status = document.getElementById('statusSelect').value;
+  const price = document.getElementById('priceInput').value;
+
+  try {
+    await api('/api/dashboard/lead/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status,
+        current_price: price ? parseFloat(price) : null
+      })
+    });
+    alert('Lead updated!');
+    closeLead();
+    loadQueue();
+  } catch (err) {
+    alert('Error updating lead');
+  }
+}
+
+function closeLead() {
+  document.getElementById('leadModal').classList.remove('open');
+}
+
+function loadCampaigns() {
+  document.getElementById('campaigns-list').innerHTML = '<p style="color: var(--muted);">Campaigns management in progress...</p>';
+}
+
+function newCampaign() {
+  alert('Campaign creation modal coming soon');
+}
+
+function loadInventory() {
+  document.getElementById('inventory-list').innerHTML = '<p style="color: var(--muted);">Inventory listing coming soon...</p>';
+}
+
+// Load on page load
+loadDashboard();
 </script>
 </body>
 </html>

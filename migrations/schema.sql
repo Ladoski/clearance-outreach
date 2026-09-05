@@ -386,3 +386,59 @@ FROM follow_up_sequences fs WHERE fs.name = '30x50 CDN Clearance' AND NOT EXISTS
 INSERT INTO follow_up_messages (sequence_id, step_order, hours_after_start, message_text)
 SELECT fs.id, 8, 163, 'Last number I''m going to try to get approved on this one: $33,500 + tax. If I can get that approved, would you take the 30'' x 50'' building?'
 FROM follow_up_sequences fs WHERE fs.name = '30x50 CDN Clearance' AND NOT EXISTS (SELECT 1 FROM follow_up_messages WHERE sequence_id = fs.id AND step_order = 8);
+
+-- Lead Scoring System
+CREATE TABLE IF NOT EXISTS lead_scores (
+  id SERIAL PRIMARY KEY,
+  lead_id INTEGER NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
+  score INTEGER DEFAULT 0,
+  -- Factors that increase score
+  customer_replied BOOLEAN DEFAULT false,
+  asked_about_price BOOLEAN DEFAULT false,
+  asked_about_freight BOOLEAN DEFAULT false,
+  asked_about_delivery BOOLEAN DEFAULT false,
+  asked_about_dimensions BOOLEAN DEFAULT false,
+  asked_about_financing BOOLEAN DEFAULT false,
+  asked_about_engineering BOOLEAN DEFAULT false,
+  showed_interest BOOLEAN DEFAULT false,
+  requested_quote BOOLEAN DEFAULT false,
+  has_previous_quote BOOLEAN DEFAULT false,
+  -- Factors that decrease score
+  marked_not_interested BOOLEAN DEFAULT false,
+  marked_do_not_contact BOOLEAN DEFAULT false,
+  inactive_days INTEGER DEFAULT 0,
+  -- Metadata
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_lead_scores_score ON lead_scores(score DESC);
+CREATE INDEX IF NOT EXISTS idx_lead_scores_lead ON lead_scores(lead_id);
+
+-- Inventory with detailed specs
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS width_ft INTEGER;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS length_ft INTEGER;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS eave_height_ft INTEGER;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS peak_height_ft INTEGER;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS model TEXT;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS frame_type TEXT;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS steel_specs TEXT;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS sheeting TEXT;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS doors TEXT;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS freight_cost NUMERIC(12,2);
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS tax_percent NUMERIC(5,2) DEFAULT 0;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'available';
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS location TEXT;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS engineering_info TEXT;
+ALTER TABLE buildings ADD COLUMN IF NOT EXISTS photos JSONB;
+
+-- Leads need inquiry details for matching
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS inquiry_width_ft INTEGER;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS inquiry_length_ft INTEGER;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS inquiry_model TEXT;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS location TEXT;
+
+-- Offers tracking for negotiation history
+ALTER TABLE offers ADD COLUMN IF NOT EXISTS freight_cost NUMERIC(12,2);
+ALTER TABLE offers ADD COLUMN IF NOT EXISTS tax_amount NUMERIC(12,2);
+
+CREATE INDEX IF NOT EXISTS idx_buildings_status ON buildings(status);
+CREATE INDEX IF NOT EXISTS idx_buildings_model ON buildings(model);
