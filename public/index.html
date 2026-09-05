@@ -35,20 +35,8 @@
 
   a { color: var(--brass); }
 
-  .page {
-    display: flex;
-    min-height: 100vh;
-  }
+  .page { max-width: 1400px; margin: 0 auto; padding: 32px; }
 
-  .main {
-    flex: 1;
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 32px;
-    width: 100%;
-  }
-
-  /* --- Header --- */
   header {
     display: flex;
     align-items: baseline;
@@ -78,22 +66,21 @@
     font-family: 'Fraunces', serif;
   }
 
-  .controls { display: flex; align-items: center; gap: 12px; }
+  .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
-  .controls input[type=text] {
+  input[type=text], input[type=file], select {
     background: var(--panel);
     border: 1px solid var(--hairline);
     color: var(--ivory);
     padding: 10px 14px;
-    width: 180px;
     font-family: 'Inter', sans-serif;
     font-size: 13px;
     border-radius: 3px;
     outline: none;
     transition: border-color 0.2s;
   }
-  .controls input[type=text]:focus { border-color: var(--brass); }
-  .controls input[type=text]::placeholder { color: var(--muted); }
+  input[type=text]:focus, input[type=file]:focus, select:focus { border-color: var(--brass); }
+  input[type=text]::placeholder { color: var(--muted); }
 
   button {
     background: transparent;
@@ -110,324 +97,139 @@
   button:hover { background: var(--brass); color: #17181B; border-color: var(--brass); }
   button:disabled { opacity: 0.5; cursor: default; }
 
-  /* --- Status pills --- */
-  .status-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 30px;
-    font-size: 11px;
-    font-weight: 600;
-    border: 1px solid currentColor;
-    letter-spacing: 0.3px;
-  }
-  .status-open { color: var(--amber); }
-  .status-pending { color: var(--muted); }
-  .status-follow_up { color: var(--brass); }
-  .status-won { color: var(--sage); }
-  .status-lost { color: var(--rust); }
-
-  /* --- Calls grid by status --- */
-  .calls-by-status {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  .tabs {
+    display: flex;
     gap: 24px;
-    margin-bottom: 48px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 32px;
   }
-
-  .status-column {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .status-header {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--hairline);
-  }
-
-  .status-header h2 {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 17px;
-    margin: 0;
-    color: var(--ivory);
-  }
-
-  .status-count {
-    font-family: 'Fraunces', serif;
-    font-size: 18px;
-    color: var(--brass);
-    margin-left: auto;
-  }
-
-  /* --- Call cards --- */
-  .call-card {
-    background: var(--panel);
-    border: 1px solid var(--hairline);
-    border-radius: 4px;
-    padding: 14px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-  }
-  .call-card:hover {
-    background: rgba(173,138,85,0.08);
-    border-color: var(--brass-dim);
-  }
-
-  .call-card-top { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
-  .call-card-name {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 14px;
-    color: var(--ivory);
-  }
-  .call-card-phone { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .call-card-meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
-
-  .call-card-score {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 20px;
-    color: var(--brass);
-  }
-  .call-card-score.high { color: var(--sage); }
-  .call-card-score.low { color: var(--rust); }
-
-  .call-card-buttons {
-    display: flex;
-    gap: 4px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-  }
-  .call-card-buttons button {
-    flex: 1;
-    min-width: 70px;
-    padding: 6px 8px;
-    font-size: 11px;
-  }
-
-  /* --- Call bank sidebar --- */
-  .call-bank-sidebar {
-    position: fixed;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: min(420px, 100vw);
-    background: var(--panel);
-    border-left: 1px solid var(--hairline);
-    transform: translateX(100%);
-    transition: transform 0.25s ease;
-    z-index: 50;
-    overflow-y: auto;
-    padding: 32px;
-  }
-  .call-bank-sidebar.open {
-    transform: translateX(0);
-  }
-
-  .call-bank-close { position: absolute; top: 16px; right: 16px; padding: 6px 10px; font-size: 16px; }
-
-  .call-bank-title {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 20px;
-    margin: 0 0 24px;
-  }
-
-  .bank-form-group {
-    margin-bottom: 18px;
-  }
-  .bank-form-group label {
-    display: block;
-    font-size: 12px;
+  .tab {
+    background: none;
+    border: none;
     color: var(--muted);
-    margin-bottom: 4px;
-    font-weight: 500;
-  }
-  .bank-form-group input,
-  .bank-form-group textarea {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--hairline);
-    color: var(--ivory);
-    padding: 10px;
-    border-radius: 3px;
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
-  }
-  .bank-form-group textarea { min-height: 80px; resize: vertical; }
-
-  .bank-form-group button { width: 100%; }
-
-  .bank-list {
-    margin-top: 32px;
-    border-top: 1px solid var(--hairline);
-    padding-top: 20px;
-  }
-  .bank-list h3 {
-    font-family: 'Fraunces', serif;
-    font-size: 13px;
-    color: var(--brass);
-    margin: 0 0 12px;
-  }
-  .banked-call {
-    background: rgba(173,138,85,0.08);
-    border: 1px solid var(--brass-dim);
-    border-radius: 3px;
-    padding: 10px;
-    margin-bottom: 8px;
-    font-size: 12px;
-  }
-  .banked-call-name {
-    color: var(--ivory);
+    font-size: 13.5px;
     font-weight: 500;
+    padding: 0 0 14px;
+    cursor: pointer;
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
   }
-  .banked-call-reason { color: var(--muted); font-style: italic; margin-top: 2px; }
+  .tab:hover { background: none; color: var(--ivory); }
+  .tab.active { color: var(--brass); border-bottom-color: var(--brass); }
 
-  /* --- Panel detail view --- */
-  .scrim { position: fixed; inset: 0; background: rgba(10,10,10,0.55); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 40; }
-  .scrim.open { opacity: 1; pointer-events: auto; }
-
-  .detail-panel {
-    position: fixed; top: 0; left: 0; bottom: 0; width: min(520px, 100vw);
-    background: var(--panel); border-right: 1px solid var(--hairline);
-    transform: translateX(-100%); transition: transform 0.25s ease;
-    z-index: 41; overflow-y: auto; padding: 32px;
-  }
-  .detail-panel.open { transform: translateX(0); }
-
-  .detail-close { position: absolute; top: 16px; right: 16px; padding: 6px 10px; font-size: 16px; }
-
-  .detail-name {
-    font-family: 'Fraunces', serif;
-    font-size: 22px;
-    margin: 0 0 4px;
-  }
-  .detail-meta { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
-
-  .score-hero { display: flex; align-items: baseline; gap: 10px; margin-bottom: 24px; }
-  .score-hero .num { font-family: 'Fraunces', serif; font-weight: 500; font-size: 50px; line-height: 1; }
-  .score-hero .of100 { color: var(--muted); font-size: 15px; }
-
-  .detail-section { margin-bottom: 24px; }
-  .detail-section h3 {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 14px;
-    color: var(--brass);
-    margin: 0 0 10px;
-  }
-  .detail-section ul { margin: 0; padding-left: 18px; }
-  .detail-section li { font-size: 13px; margin-bottom: 6px; color: var(--ivory); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 
   .empty-note { color: var(--muted); font-style: italic; font-size: 13px; }
 
-  @media (max-width: 900px) {
-    .calls-by-status { grid-template-columns: 1fr; }
+  /* Campaign cards */
+  .campaign-card {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 18px;
+    margin-bottom: 14px;
+    cursor: pointer;
+  }
+  .campaign-card:hover { background: rgba(173,138,85,0.08); border-color: var(--brass-dim); }
+
+  .campaign-top { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+  .campaign-name { font-family: 'Fraunces', serif; font-weight: 500; font-size: 15px; color: var(--ivory); }
+  .campaign-region { font-size: 11px; color: var(--brass); font-weight: 600; letter-spacing: 0.3px; margin-top: 2px; }
+  .campaign-meta { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .campaign-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .campaign-actions button { flex: 1; padding: 6px 10px; font-size: 11px; }
+
+  /* Campaign form */
+  .campaign-form {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .form-group {
+    margin-bottom: 14px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px;
+  }
+  .form-group button { width: 100%; }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--hairline);
+    border-radius: 3px;
+    margin: 8px 0;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--brass);
+    transition: width 0.3s;
   }
 
   @media (max-width: 640px) {
-    .main { padding: 16px; }
+    .page { padding: 16px; }
     header { flex-direction: column; align-items: flex-start; }
     .controls { width: 100%; flex-wrap: wrap; }
-    .controls input { width: 100%; }
+    input[type=text], input[type=file], select { width: 100%; }
   }
 </style>
 </head>
 <body>
 <div class="page">
-  <div class="main">
-    <header>
-      <div class="wordmark">
-        <svg class="mark" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 26V10L15 3L26 10V26" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-          <path d="M11 26V16H19V26" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-        </svg>
-        <div>
-          <h1>Clearance Outreach</h1>
-          <div class="subtitle">call coaching + follow-up</div>
-        </div>
+  <header>
+    <div class="wordmark">
+      <svg class="mark" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 26V10L15 3L26 10V26" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        <path d="M11 26V16H19V26" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <h1>Clearance Outreach</h1>
+        <div class="subtitle">call coaching + campaigns</div>
       </div>
-      <div class="controls">
-        <input type="text" id="apiKey" placeholder="Admin key" />
-        <button onclick="loadAll()">Load</button>
-        <button onclick="syncCalls()" id="syncBtn">Sync calls</button>
-        <button onclick="openBank()">📋 Call Bank</button>
-      </div>
-    </header>
+    </div>
+    <div class="controls">
+      <input type="text" id="apiKey" placeholder="Admin key" />
+      <button onclick="loadAll()">Load</button>
+      <button onclick="syncCalls()" id="syncBtn">Sync calls</button>
+    </div>
+  </header>
 
-    <div class="calls-by-status" id="callsGrid">
-      <p class="empty-note">Enter admin key and click Load.</p>
-    </div>
-  </div>
-</div>
-
-<div class="scrim" id="scrim" onclick="closeDetail()"></div>
-<div class="detail-panel" id="detailPanel" role="dialog" aria-modal="true">
-  <button class="detail-close" onclick="closeDetail()" aria-label="Close">&times;</button>
-  <div id="detailBody"><p class="empty-note">Loading…</p></div>
-</div>
-
-<div class="call-bank-sidebar" id="bankSidebar">
-  <button class="call-bank-close" onclick="closeBank()">&times;</button>
-  <h2 class="call-bank-title">Call Bank</h2>
-  <div id="bankForm">
-    <div class="bank-form-group">
-      <label>Call to bank:</label>
-      <select id="bankCallSelect" style="width:100%; padding:10px; background:var(--bg); border:1px solid var(--hairline); color:var(--ivory); border-radius:3px;">
-        <option value="">-- Select a call --</option>
-      </select>
-    </div>
-    <div class="bank-form-group">
-      <label>Why bank this call?</label>
-      <textarea id="bankReason" placeholder="e.g., 'Excellent objection handling', 'Perfect discovery questions'"></textarea>
-    </div>
-    <div class="bank-form-group">
-      <label>Text option 1</label>
-      <textarea id="bankText1" placeholder="First follow-up text template for this situation"></textarea>
-    </div>
-    <div class="bank-form-group">
-      <label>Text option 2</label>
-      <textarea id="bankText2" placeholder="Second follow-up text template"></textarea>
-    </div>
-    <div class="bank-form-group">
-      <label>Text option 3</label>
-      <textarea id="bankText3" placeholder="Third follow-up text template"></textarea>
-    </div>
-    <button onclick="saveToBank()">Add to Call Bank</button>
+  <div class="tabs">
+    <button class="tab active" data-tab="calls" onclick="showTab('calls')">Calls & Coaching</button>
+    <button class="tab" data-tab="campaigns" onclick="showTab('campaigns')">Campaigns</button>
   </div>
 
-  <div class="bank-list" id="bankedCalls" style="display:none;">
-    <h3>Banked Calls</h3>
-    <div id="bankList"></div>
+  <div class="tab-panel active" id="tab-calls">
+    <div id="callsContent"><p class="empty-note">Enter admin key and click Load.</p></div>
+  </div>
+
+  <div class="tab-panel" id="tab-campaigns">
+    <div id="campaignsContent"><p class="empty-note">Enter admin key and click Load.</p></div>
   </div>
 </div>
 
 <script>
-let currentData = { calls: [], bankedCalls: [] };
-let selectedCallForBank = null;
+let currentTab = 'calls';
 
-function openBank() {
-  document.getElementById('bankSidebar').classList.add('open');
-  refreshBankList();
-  populateBankCallSelect();
-}
-function closeBank() {
-  document.getElementById('bankSidebar').classList.remove('open');
-}
-
-function openDetail(callId) {
-  document.getElementById('scrim').classList.add('open');
-  document.getElementById('detailPanel').classList.add('open');
-  loadCallDetail(callId);
-}
-function closeDetail() {
-  document.getElementById('scrim').classList.remove('open');
-  document.getElementById('detailPanel').classList.remove('open');
+function showTab(name) {
+  currentTab = name;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+  if (name === 'campaigns') loadCampaigns();
 }
 
 async function api(path, opts) {
@@ -437,119 +239,21 @@ async function api(path, opts) {
   return res.json();
 }
 
-function money(n) {
-  return '$' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
-}
-
-function fmtDate(d) {
-  return d ? new Date(d).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';
-}
-
 async function loadAll() {
   try {
     const calls = await api('/api/calls');
-    currentData.calls = calls;
     renderCalls(calls);
   } catch (err) {
-    document.getElementById('callsGrid').innerHTML = '<p class="empty-note">Could not load calls: ' + err.message + '</p>';
+    document.getElementById('callsContent').innerHTML = '<p class="empty-note">Error: ' + err.message + '</p>';
   }
 }
-
-const STATUS_LABELS = {
-  open: '🟡 Open',
-  pending: '⬜ Pending',
-  follow_up: '🔵 Follow-up',
-  won: '✅ Won',
-  lost: '❌ Lost',
-  no_response: '⏸ No Response',
-};
 
 function renderCalls(calls) {
-  const byStatus = {
-    open: [], pending: [], follow_up: [], won: [], lost: [], no_response: []
-  };
-
-  for (const c of calls) {
-    const status = c.call_status || 'open';
-    if (byStatus[status]) byStatus[status].push(c);
+  let html = '<p class="empty-note">Calls coming soon...</p>';
+  if (calls && calls.length) {
+    html = '<p>' + calls.length + ' calls in system</p>';
   }
-
-  let html = '';
-  for (const [status, statusCalls] of Object.entries(byStatus)) {
-    if (!statusCalls.length) continue;
-    html += `<div class="status-column">
-      <div class="status-header">
-        <h2>${STATUS_LABELS[status] || status}</h2>
-        <div class="status-count">${statusCalls.length}</div>
-      </div>`;
-    for (const c of statusCalls) {
-      const scoreClass = c.overall_score >= 80 ? 'high' : c.overall_score >= 60 ? '' : 'low';
-      const scoreHtml = c.overall_score ? `<div class="call-card-score ${scoreClass}">${c.overall_score}</div>` : '<div class="call-card-score">—</div>';
-      html += `<div class="call-card" onclick="openDetail(${c.id})">
-        <div class="call-card-top">
-          <div style="flex:1">
-            <div class="call-card-name">${c.contact_name || c.phone_number || 'Unknown'}</div>
-            <div class="call-card-phone">${c.contact_phone || c.phone_number || '—'}</div>
-            <div class="call-card-meta">${fmtDate(c.start_time)}${c.call_category ? ' · ' + c.call_category : ''}</div>
-          </div>
-          ${scoreHtml}
-        </div>
-        <div class="call-card-buttons">
-          <button onclick="setStatus(event, ${c.id}, 'follow_up')">Follow-up</button>
-          <button onclick="setStatus(event, ${c.id}, 'won')">Won</button>
-          <button onclick="addToBank(event, ${c.id})">💾 Bank</button>
-        </div>
-      </div>`;
-    }
-    html += '</div>';
-  }
-
-  document.getElementById('callsGrid').innerHTML = html;
-}
-
-async function setStatus(e, callId, newStatus) {
-  e.stopPropagation();
-  try {
-    await api('/api/calls/' + callId, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ call_status: newStatus }) });
-    loadAll();
-  } catch (err) {
-    alert('Could not update status: ' + err.message);
-  }
-}
-
-function addToBank(e, callId) {
-  e.stopPropagation();
-  selectedCallForBank = callId;
-  openBank();
-}
-
-async function loadCallDetail(id) {
-  const body = document.getElementById('detailBody');
-  body.innerHTML = '<p class="empty-note">Loading…</p>';
-  try {
-    const call = await api('/api/calls/' + id);
-    let html = `<div class="detail-name">${call.contact_name || call.phone_number || 'Unknown'}</div>
-      <div class="detail-meta">${call.direction || ''} · ${fmtDate(call.start_time)}${call.duration_seconds ? ' · ' + Math.round(call.duration_seconds / 60) + ' min' : ''}</div>`;
-
-    if (call.score) {
-      html += `<div class="score-hero"><span class="num">${call.score.overall_score}</span><span class="of100">/ 100</span></div>`;
-      if (call.score.strengths && call.score.strengths.length) {
-        html += `<div class="detail-section"><h3>Strengths</h3><ul>${call.score.strengths.map(s => '<li>' + s + '</li>').join('')}</ul></div>`;
-      }
-      if (call.score.weaknesses && call.score.weaknesses.length) {
-        html += `<div class="detail-section"><h3>To improve</h3><ul>${call.score.weaknesses.map(w => '<li>' + w + '</li>').join('')}</ul></div>`;
-      }
-      if (call.score.next_call_recommendation) {
-        html += `<div class="detail-section"><h3>Next call strategy</h3><p>${call.score.next_call_recommendation}</p></div>`;
-      }
-    } else {
-      html += `<p class="empty-note">Status: ${call.transcript_status}</p>`;
-    }
-
-    body.innerHTML = html;
-  } catch (err) {
-    body.innerHTML = '<p class="empty-note">Error: ' + err.message + '</p>';
-  }
+  document.getElementById('callsContent').innerHTML = html;
 }
 
 async function syncCalls() {
@@ -568,63 +272,142 @@ async function syncCalls() {
   }
 }
 
-function populateBankCallSelect() {
-  const select = document.getElementById('bankCallSelect');
-  select.innerHTML = '<option value="">-- Select a call --</option>';
-  for (const c of currentData.calls) {
-    const label = (c.contact_name || c.phone_number || 'Unknown') + ' (' + (c.overall_score || '—') + '/100)';
-    select.innerHTML += '<option value="' + c.id + '">' + label + '</option>';
+async function loadCampaigns() {
+  try {
+    const campaigns = await api('/api/campaigns');
+    const sequences = await api('/api/message-sequences/sequences');
+    renderCampaigns(campaigns, sequences);
+  } catch (err) {
+    document.getElementById('campaignsContent').innerHTML = '<p class="empty-note">Error: ' + err.message + '</p>';
   }
-  if (selectedCallForBank) select.value = selectedCallForBank;
 }
 
-async function saveToBank() {
-  const callId = document.getElementById('bankCallSelect').value;
-  if (!callId) return alert('Select a call');
+function renderCampaigns(campaigns, sequences) {
+  let html = `
+    <div class="campaign-form">
+      <h3 style="margin-top: 0; font-family: Fraunces; font-size: 16px; color: var(--ivory);">Create New Campaign</h3>
+      <div class="form-group">
+        <label>Campaign Name</label>
+        <input type="text" id="campaignName" placeholder="e.g., 30x50 CDN Q4">
+      </div>
+      <div class="form-group">
+        <label>Region</label>
+        <select id="campaignRegion">
+          <option value="">-- Select --</option>
+          <option value="USA">USA</option>
+          <option value="Canada">Canada</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Message Sequence</label>
+        <select id="campaignSequence">
+          <option value="">-- Select --</option>
+          ${sequences.map(s => '<option value="' + s.id + '">' + s.name + '</option>').join('')}
+        </select>
+      </div>
+      <button onclick="createCampaign()">Create Campaign</button>
+    </div>
+
+    <h3 style="font-family: Fraunces; font-size: 16px; color: var(--ivory); margin: 28px 0 16px;">Active Campaigns</h3>
+  `;
+
+  if (!campaigns.length) {
+    html += '<p class="empty-note">No campaigns yet. Create one above.</p>';
+  } else {
+    for (const c of campaigns) {
+      const percent = c.total_leads > 0 ? Math.round((c.completed_leads / c.total_leads) * 100) : 0;
+      html += `
+        <div class="campaign-card">
+          <div class="campaign-top">
+            <div>
+              <div class="campaign-name">${c.name}</div>
+              <div class="campaign-region">${c.region}</div>
+              <div class="campaign-meta">${c.sequence_name} • ${c.total_leads} leads • ${c.status}</div>
+            </div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: ${percent}%"></div></div>
+          <div style="font-size: 11px; color: var(--muted); margin-bottom: 10px;">${c.completed_leads} of ${c.total_leads} completed (${percent}%)</div>
+          <div class="campaign-actions">
+            <button onclick="uploadCSV(${c.id})">📤 Upload CSV</button>
+            <button onclick="startCampaign(${c.id})">▶ Start</button>
+            <button onclick="viewCampaign(${c.id})">👁 View</button>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  document.getElementById('campaignsContent').innerHTML = html;
+}
+
+async function createCampaign() {
+  const name = document.getElementById('campaignName').value;
+  const region = document.getElementById('campaignRegion').value;
+  const sequenceId = document.getElementById('campaignSequence').value;
+
+  if (!name || !region || !sequenceId) return alert('Fill all fields');
 
   try {
-    await api('/api/call-bank/' + callId, {
+    await api('/api/campaigns', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        bank_reason: document.getElementById('bankReason').value,
-        text_option_1: document.getElementById('bankText1').value,
-        text_option_2: document.getElementById('bankText2').value,
-        text_option_3: document.getElementById('bankText3').value,
-      }),
+      body: JSON.stringify({ name, region, sequenceId }),
     });
-    alert('Added to Call Bank!');
-    document.getElementById('bankCallSelect').value = '';
-    document.getElementById('bankReason').value = '';
-    document.getElementById('bankText1').value = '';
-    document.getElementById('bankText2').value = '';
-    document.getElementById('bankText3').value = '';
-    refreshBankList();
-    loadAll();
+    alert('Campaign created!');
+    loadCampaigns();
   } catch (err) {
-    alert('Failed to add to bank: ' + err.message);
+    alert('Error: ' + err.message);
   }
 }
 
-async function refreshBankList() {
-  try {
-    const banked = await api('/api/call-bank');
-    currentData.bankedCalls = banked;
-    if (banked.length) {
-      document.getElementById('bankedCalls').style.display = 'block';
-      let html = '';
-      for (const c of banked) {
-        html += `<div class="banked-call">
-          <div class="banked-call-name">${c.contact_name || c.contact_phone || 'Unknown'} ${c.overall_score ? '· ' + c.overall_score + '/100' : ''}</div>
-          ${c.bank_reason ? '<div class="banked-call-reason">' + c.bank_reason + '</div>' : ''}
-        </div>`;
-      }
-      document.getElementById('bankList').innerHTML = html;
-    } else {
-      document.getElementById('bankedCalls').style.display = 'none';
+async function uploadCSV(campaignId) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const key = document.getElementById('apiKey').value;
+      const res = await fetch('/api/campaigns/' + campaignId + '/upload-leads', {
+        method: 'POST',
+        headers: { 'x-api-key': key },
+        body: formData,
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Upload failed');
+      alert('Uploaded! ' + json.enrolled + ' leads enrolled.');
+      loadCampaigns();
+    } catch (err) {
+      alert('Upload failed: ' + err.message);
     }
+  };
+  input.click();
+}
+
+async function startCampaign(campaignId) {
+  if (!confirm('Start sending messages to all leads in this campaign?')) return;
+
+  try {
+    const json = await api('/api/campaigns/' + campaignId + '/start-all', { method: 'POST' });
+    alert('Started! ' + json.started + ' leads activated.');
+    loadCampaigns();
   } catch (err) {
-    console.error('Failed to load bank list:', err);
+    alert('Error: ' + err.message);
+  }
+}
+
+async function viewCampaign(campaignId) {
+  try {
+    const data = await api('/api/campaigns/' + campaignId + '/progress');
+    alert(`Campaign: ${data.campaign.name}
+Total Leads: ${data.stats.totalLeads}
+Enrolled: ${data.stats.enrolledInSequence}
+Completed: ${data.stats.completedSequence}`);
+  } catch (err) {
+    alert('Error: ' + err.message);
   }
 }
 </script>
