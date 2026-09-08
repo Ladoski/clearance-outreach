@@ -45,22 +45,22 @@ body { background: var(--bg); color: var(--ivory); font-family: 'Inter', -apple-
 
 button { background: transparent; color: var(--brass); border: 1px solid var(--brass); padding: 10px 16px; border-radius: 4px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; transition: all 0.2s; }
 button:hover { background: var(--brass); color: #17181B; }
-button:disabled { opacity: 0.5; cursor: default; }
 
-input[type=text], select { background: var(--panel); border: 1px solid var(--hairline); color: var(--ivory); padding: 10px; border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
+input[type=text] { background: var(--panel); border: 1px solid var(--hairline); color: var(--ivory); padding: 10px; border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 13px; outline: none; }
 input[type=text]:focus { border-color: var(--brass); }
 
 .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; }
 .modal.open { display: flex; align-items: center; justify-content: center; }
-.modal-content { background: var(--panel); border: 1px solid var(--hairline); border-radius: 8px; padding: 32px; max-width: 500px; width: 90%; }
+.modal-content { background: var(--panel); border: 1px solid var(--hairline); border-radius: 8px; padding: 32px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
 .modal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin-bottom: 20px; }
 .modal-field { margin-bottom: 16px; }
 .modal-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
-.modal-field input, .modal-field select { width: 100%; }
+.modal-field input { width: 100%; }
 .modal-buttons { display: flex; gap: 10px; margin-top: 24px; }
 .modal-buttons button { flex: 1; }
 
 h2 { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 20px; }
+.empty { color: var(--muted); font-style: italic; }
 </style>
 </head>
 <body>
@@ -68,11 +68,11 @@ h2 { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 20px; }
   <div class="sidebar">
     <div class="logo">Toro CRM</div>
     <nav>
-      <div class="nav-item active" onclick="showView('dashboard')">📊 Dashboard</div>
-      <div class="nav-item" onclick="showView('queue')">🔥 Start My Day</div>
-      <div class="nav-item" onclick="showView('leads')">👥 All Leads</div>
-      <div class="nav-item" onclick="showView('campaigns')">📢 Campaigns</div>
-      <div class="nav-item" onclick="showView('inventory')">🏢 Inventory</div>
+      <div class="nav-item active" data-view="dashboard" onclick="loadView('dashboard')">📊 Dashboard</div>
+      <div class="nav-item" data-view="queue" onclick="loadView('queue')">🔥 Start My Day</div>
+      <div class="nav-item" data-view="leads" onclick="loadView('leads')">👥 All Leads</div>
+      <div class="nav-item" data-view="campaigns" onclick="loadView('campaigns')">📢 Campaigns</div>
+      <div class="nav-item" data-view="inventory" onclick="loadView('inventory')">🏢 Inventory</div>
     </nav>
     <hr style="border: none; border-top: 1px solid var(--hairline); margin: 24px 0;">
     <input type="text" id="apiKey" placeholder="Admin key" style="width: 100%; margin-bottom: 10px;">
@@ -86,7 +86,6 @@ h2 { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 20px; }
     </div>
 
     <div class="content">
-      <!-- Dashboard View -->
       <div id="view-dashboard" style="display: block;">
         <h2>Today's Metrics</h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
@@ -103,42 +102,36 @@ h2 { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 20px; }
             <div class="stat-label">Avg Lead Score</div>
           </div>
         </div>
-
         <h2 style="margin-top: 32px;">Lead Status Breakdown</h2>
         <div id="status-breakdown"></div>
       </div>
 
-      <!-- Start My Day View -->
       <div id="view-queue" style="display: none;">
-        <h2>🔥 Start My Day - Your Priority Queue</h2>
-        <p style="color: var(--muted); margin-bottom: 20px;">Sorted by score + engagement. Click to see full details.</p>
+        <h2>🔥 Your Priority Queue</h2>
+        <p style="color: var(--muted); margin-bottom: 20px;">Sorted by engagement. Click to view details.</p>
         <div id="queue-list"></div>
       </div>
 
-      <!-- All Leads View -->
       <div id="view-leads" style="display: none;">
         <h2>All Leads</h2>
-        <input type="text" id="search-leads" placeholder="Search by name or phone..." style="width: 100%; margin-bottom: 20px;">
+        <input type="text" id="search-leads" placeholder="Search by name or phone..." style="width: 100%; margin-bottom: 20px; padding: 10px;">
         <div id="leads-list"></div>
       </div>
 
-      <!-- Campaigns View -->
       <div id="view-campaigns" style="display: none;">
         <h2>Campaigns</h2>
-        <button onclick="newCampaign()">+ New Campaign</button>
+        <button onclick="showNewCampaign()">+ New Campaign</button>
         <div id="campaigns-list" style="margin-top: 20px;"></div>
       </div>
 
-      <!-- Inventory View -->
       <div id="view-inventory" style="display: none;">
-        <h2>Inventory</h2>
+        <h2>Available Inventory</h2>
         <div id="inventory-list"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Lead Detail Modal -->
 <div class="modal" id="leadModal">
   <div class="modal-content">
     <div class="modal-title" id="modalTitle"></div>
@@ -150,30 +143,29 @@ h2 { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 20px; }
 </div>
 
 <script>
-let currentView = 'dashboard';
-
-function api(path, opts = {}) {
+const api = async (path, opts = {}) => {
   const key = document.getElementById('apiKey').value;
-  return fetch(path, {
+  const res = await fetch(path, {
     ...opts,
     headers: { ...(opts.headers || {}), 'x-api-key': key }
-  }).then(r => r.ok ? r.json() : Promise.reject(r.status));
-}
+  });
+  if (!res.ok) throw new Error(`${res.status}`);
+  return res.json();
+};
 
-function showView(view) {
-  currentView = view;
+const loadView = (view) => {
   document.querySelectorAll('[id^="view-"]').forEach(el => el.style.display = 'none');
   document.getElementById('view-' + view).style.display = 'block';
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  event.target.classList.add('active');
+  document.querySelector(`[data-view="${view}"]`).classList.add('active');
 
   if (view === 'queue') loadQueue();
-  else if (view === 'leads') loadLeads();
-  else if (view === 'campaigns') loadCampaigns();
-  else if (view === 'inventory') loadInventory();
-}
+  if (view === 'leads') loadLeads();
+  if (view === 'campaigns') loadCampaigns();
+  if (view === 'inventory') loadInventory();
+};
 
-async function loadDashboard() {
+const loadDashboard = async () => {
   try {
     const data = await api('/api/dashboard');
     document.getElementById('stat-msgs').textContent = data.metrics.messages_today;
@@ -182,104 +174,98 @@ async function loadDashboard() {
 
     let html = '';
     for (const [status, count] of Object.entries(data.leads_by_status)) {
-      html += `<div class="stat-box">${status}: <strong>${count}</strong></div>`;
+      html += `<div class="stat-box"><strong>${status}:</strong> ${count}</div>`;
     }
-    document.getElementById('status-breakdown').innerHTML = html;
+    document.getElementById('status-breakdown').innerHTML = html || '<p class="empty">No leads yet</p>';
   } catch (err) {
-    alert('Error loading dashboard');
+    alert('Error loading dashboard: ' + err.message);
   }
-}
+};
 
-async function loadQueue() {
+const loadQueue = async () => {
   try {
     const data = await api('/api/dashboard/start-day');
     let html = '';
-    for (const lead of data.queue) {
-      html += `
-        <div class="lead-card" onclick="viewLead(${lead.id})">
-          <div style="display: flex; justify-content: space-between; align-items: start;">
-            <div>
-              <div class="lead-name">${lead.name || 'Unknown'}</div>
-              <div class="lead-meta">${lead.phone || ''} • ${lead.status}</div>
-              ${lead.company ? '<div class="lead-meta">' + lead.company + '</div>' : ''}
+    if (data.queue.length === 0) {
+      html = '<p class="empty">No leads in queue</p>';
+    } else {
+      for (const lead of data.queue) {
+        html += `
+          <div class="lead-card" onclick="viewLead(${lead.id})">
+            <div style="display: flex; justify-content: space-between;">
+              <div>
+                <div class="lead-name">${lead.name || 'Unknown'}</div>
+                <div class="lead-meta">${lead.phone || ''} • ${lead.status}</div>
+              </div>
+              <span class="lead-score">${lead.score}/100</span>
             </div>
-            <span class="lead-score">${lead.score}/100</span>
           </div>
-          ${lead.last_message ? '<div class="lead-meta" style="margin-top: 8px; font-style: italic;">"' + lead.last_message.substring(0, 60) + '..."</div>' : ''}
-        </div>
-      `;
+        `;
+      }
     }
     document.getElementById('queue-list').innerHTML = html;
   } catch (err) {
-    alert('Error loading queue');
+    document.getElementById('queue-list').innerHTML = '<p class="empty">Error loading queue</p>';
   }
-}
+};
 
-async function loadLeads() {
+const loadLeads = async () => {
   try {
-    const data = await api('/api/leads');
+    const data = await api('/api/contacts');
     let html = '';
-    for (const lead of data.slice(0, 100)) {
-      html += `
-        <div class="lead-card" onclick="viewLead(${lead.id})">
-          <div class="lead-name">${lead.name || 'Unknown'}</div>
-          <div class="lead-meta">${lead.phone} • ${lead.status}</div>
-        </div>
-      `;
+    if (!Array.isArray(data) || data.length === 0) {
+      html = '<p class="empty">No leads</p>';
+    } else {
+      for (const lead of data.slice(0, 100)) {
+        html += `
+          <div class="lead-card" onclick="viewLead(${lead.id})">
+            <div class="lead-name">${lead.name || 'Unknown'}</div>
+            <div class="lead-meta">${lead.phone} • ${lead.status}</div>
+          </div>
+        `;
+      }
     }
     document.getElementById('leads-list').innerHTML = html;
   } catch (err) {
-    alert('Error loading leads');
+    document.getElementById('leads-list').innerHTML = '<p class="empty">Error loading leads</p>';
   }
-}
+};
 
-async function viewLead(id) {
+const viewLead = async (id) => {
   try {
     const data = await api('/api/dashboard/lead/' + id);
     const l = data.lead;
-    const b = data.building;
 
     let html = `
       <div style="margin-bottom: 20px;">
-        <strong>${l.name}</strong> • ${l.phone}<br>
-        Status: <strong>${l.status}</strong> | Score: <strong>${data.score?.score || 0}/100</strong>
+        <strong>${l.name}</strong><br>
+        ${l.phone}<br>
+        Status: <strong>${l.status}</strong>
       </div>
     `;
 
-    if (b) html += `<div style="margin-bottom: 20px; padding: 12px; background: rgba(173,138,85,0.1); border-radius: 4px;">
-      <strong>${b.name}</strong><br>
-      ${b.width_ft}' x ${b.length_ft}' x ${b.eave_height_ft}' eave<br>
-      $${b.initial_price} → $${b.floor_price || (b.initial_price * 0.6)}<br>
-    </div>`;
-
-    if (data.messages.length) {
-      html += `<strong>Recent Messages:</strong><div style="margin-top: 10px;">`;
+    if (data.messages && data.messages.length > 0) {
+      html += `<div style="margin-bottom: 20px;"><strong>Recent Messages:</strong>`;
       for (const msg of data.messages.slice(0, 5)) {
-        const dir = msg.direction === 'inbound' ? '→ ' : '← ';
-        html += `<div style="margin-bottom: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 3px; font-size: 12px;">
-          ${dir} ${msg.body.substring(0, 100)}
+        html += `<div style="margin-top: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 3px; font-size: 12px;">
+          ${msg.direction === 'inbound' ? '→' : '←'} ${msg.body.substring(0, 80)}
         </div>`;
       }
       html += '</div>';
     }
 
     html += `
-      <div class="modal-field" style="margin-top: 20px;">
-        <label>Update Status</label>
-        <select id="statusSelect">
+      <div style="margin-top: 20px;">
+        <label style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px;">Update Status</label>
+        <select id="statusSelect" style="width: 100%; padding: 8px; background: var(--bg); border: 1px solid var(--hairline); color: var(--ivory); border-radius: 3px;">
           <option value="new">New</option>
-          <option value="replied">Replied</option>
+          <option value="contacted">Contacted</option>
           <option value="negotiating">Negotiating</option>
           <option value="agreed">Agreed</option>
           <option value="cold">Cold</option>
-          <option value="dead">Dead</option>
         </select>
+        <button onclick="updateLead(${id})" style="width: 100%; margin-top: 12px;">Save</button>
       </div>
-      <div class="modal-field">
-        <label>Current Price</label>
-        <input type="text" id="priceInput" value="${l.current_price || ''}" placeholder="$">
-      </div>
-      <button onclick="updateLead(${id})" style="width: 100%; margin-top: 20px;">Save Changes</button>
     `;
 
     document.getElementById('modalTitle').textContent = l.name;
@@ -288,46 +274,75 @@ async function viewLead(id) {
   } catch (err) {
     alert('Error loading lead');
   }
-}
+};
 
-async function updateLead(id) {
+const updateLead = async (id) => {
   const status = document.getElementById('statusSelect').value;
-  const price = document.getElementById('priceInput').value;
-
   try {
     await api('/api/dashboard/lead/' + id, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        status,
-        current_price: price ? parseFloat(price) : null
-      })
+      body: JSON.stringify({ status })
     });
-    alert('Lead updated!');
     closeLead();
     loadQueue();
   } catch (err) {
     alert('Error updating lead');
   }
-}
+};
 
-function closeLead() {
+const closeLead = () => {
   document.getElementById('leadModal').classList.remove('open');
-}
+};
 
-function loadCampaigns() {
-  document.getElementById('campaigns-list').innerHTML = '<p style="color: var(--muted);">Campaigns management in progress...</p>';
-}
+const loadCampaigns = async () => {
+  try {
+    const data = await api('/api/campaigns');
+    let html = '';
+    if (data.length === 0) {
+      html = '<p class="empty">No campaigns yet</p>';
+    } else {
+      for (const c of data) {
+        html += `
+          <div class="lead-card">
+            <div class="lead-name">${c.name}</div>
+            <div class="lead-meta">${c.region} • ${c.total_leads} leads • ${c.status}</div>
+          </div>
+        `;
+      }
+    }
+    document.getElementById('campaigns-list').innerHTML = html;
+  } catch (err) {
+    document.getElementById('campaigns-list').innerHTML = '<p class="empty">Error loading campaigns</p>';
+  }
+};
 
-function newCampaign() {
-  alert('Campaign creation modal coming soon');
-}
+const loadInventory = async () => {
+  try {
+    const data = await api('/api/buildings');
+    let html = '';
+    if (!Array.isArray(data) || data.length === 0) {
+      html = '<p class="empty">No inventory</p>';
+    } else {
+      for (const b of data) {
+        html += `
+          <div class="lead-card">
+            <div class="lead-name">${b.name}</div>
+            <div class="lead-meta">${b.width_ft || '?'} x ${b.length_ft || '?'} • $${b.floor_price || b.initial_price}</div>
+          </div>
+        `;
+      }
+    }
+    document.getElementById('inventory-list').innerHTML = html;
+  } catch (err) {
+    document.getElementById('inventory-list').innerHTML = '<p class="empty">Error loading inventory</p>';
+  }
+};
 
-function loadInventory() {
-  document.getElementById('inventory-list').innerHTML = '<p style="color: var(--muted);">Inventory listing coming soon...</p>';
-}
+const showNewCampaign = () => {
+  alert('Campaign creation coming soon');
+};
 
-// Load on page load
 loadDashboard();
 </script>
 </body>
