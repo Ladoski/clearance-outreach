@@ -10,16 +10,21 @@ router.use(requireAdmin);
 
 // GET /api/campaigns - list all campaigns
 router.get('/', async (req, res) => {
-  const { rows } = await db.query(
-    `SELECT c.*, fs.name AS sequence_name,
-            (SELECT COUNT(*) FROM campaign_leads WHERE campaign_id = c.id) AS total_leads,
-            (SELECT COUNT(*) FROM campaign_leads WHERE campaign_id = c.id AND completed_at IS NOT NULL) AS completed_leads
-     FROM campaigns c
-     LEFT JOIN follow_up_sequences fs ON fs.id = c.sequence_id
-     ORDER BY c.created_at DESC`,
-    []
-  );
-  res.json(rows);
+  try {
+    const { rows } = await db.query(
+      `SELECT c.*, fs.name AS sequence_name,
+              (SELECT COUNT(*) FROM campaign_leads WHERE campaign_id = c.id) AS total_leads,
+              (SELECT COUNT(*) FROM campaign_leads WHERE campaign_id = c.id AND completed_at IS NOT NULL) AS completed_leads
+       FROM campaigns c
+       LEFT JOIN follow_up_sequences fs ON fs.id = c.sequence_id
+       ORDER BY c.created_at DESC`,
+      []
+    );
+    res.json(rows || []);
+  } catch (err) {
+    console.error('Campaigns error:', err);
+    res.json([]);
+  }
 });
 
 // POST /api/campaigns - create a new campaign

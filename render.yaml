@@ -77,7 +77,7 @@ services:
       "
     envVars:
       - key: SELF_URL
-        sync: false # same web service URL as the call sync
+        value: https://clearance-outreach-api.onrender.com
       - key: CRON_SECRET
         fromService:
           type: web
