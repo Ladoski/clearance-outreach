@@ -6,42 +6,50 @@ const router = express.Router();
 
 /**
  * RingCentral inbound SMS webhook.
- * RingCentral sends a "validation-token" header on subscription creation
- * (echo it back once) and then POSTs message events as replies arrive.
- * Docs: https://developers.ringcentral.com/guide/notifications/webhooks
+ * When a customer replies, save the message AND pause all active follow-up sequences.
  */
 router.post('/ringcentral', express.json(), async (req, res) => {
   const validationToken = req.headers['validation-token'];
   if (validationToken) {
-    // Handshake: RC expects the token echoed back, then no further body.
     res.set('Validation-Token', validationToken);
     return res.status(200).end();
   }
 
   const body = req.body;
-  const message = body?.body?.body || body; // RC event payload shape varies by subscription
+  const message = body?.body?.body || body;
 
   try {
     const fromNumber = message?.from?.phoneNumber || message?.body?.from?.phoneNumber;
     const text = message?.subject || message?.body?.subject || '';
 
     if (fromNumber) {
-      const leadRes = await db.query('SELECT * FROM leads WHERE phone = $1 ORDER BY created_at DESC LIMIT 1', [fromNumber]);
-      const lead = leadRes.rows[0];
-      if (lead) {
+      // Find contact by phone
+      const contactRes = await db.query('SELECT * FROM contacts WHERE phone = $1 ORDER BY created_at DESC LIMIT 1', [fromNumber]);
+      const contact = contactRes.rows[0];
+      
+      if (contact) {
+        // Save inbound message
         await db.query(
-          `INSERT INTO messages (lead_id, channel, direction, body) VALUES ($1, 'sms', 'inbound', $2)`,
-          [lead.id, text]
+          `INSERT INTO messages (contact_id, channel, direction, body) VALUES ($1, 'sms', 'inbound', $2)`,
+          [contact.id, text]
         );
-        // Stop auto follow-ups the moment a human replies — hand off to the setter.
+
+        // **CRITICAL: Pause all active follow-up sequences for this contact**
         await db.query(
-          `UPDATE leads SET status = 'replied', next_follow_up_at = NULL, updated_at = now() WHERE id = $1`,
-          [lead.id]
+          `UPDATE contact_follow_ups SET completed_at = now() WHERE contact_id = $1 AND completed_at IS NULL`,
+          [contact.id]
         );
+
+        // Update contact status to show they've replied
+        await db.query(
+          `UPDATE contacts SET status = 'replied', updated_at = now() WHERE id = $1`,
+          [contact.id]
+        );
+
+        console.log(`[webhooks] Contact ${contact.name} (${fromNumber}) replied - stopped automated sequences`);
       }
     }
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('[webhooks/ringcentral] Failed to process inbound message:', err);
   }
 

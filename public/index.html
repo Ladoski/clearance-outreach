@@ -21,30 +21,29 @@ body { background: var(--bg); color: var(--ivory); font-family: 'Inter', -apple-
 .layout { display: flex; min-height: 100vh; }
 .sidebar { width: 280px; background: var(--panel); border-right: 1px solid var(--hairline); padding: 24px; overflow-y: auto; }
 .main { flex: 1; display: flex; flex-direction: column; }
-.header { background: var(--panel); border-bottom: 1px solid var(--hairline); padding: 20px 32px; }
+.header { background: var(--panel); border-bottom: 1px solid var(--hairline); padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
 .content { flex: 1; padding: 32px; overflow-y: auto; }
 .logo { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin-bottom: 32px; }
 .nav-item { display: block; padding: 12px 14px; border-radius: 4px; margin-bottom: 8px; cursor: pointer; color: var(--muted); }
 .nav-item:hover { background: rgba(173,138,85,0.1); color: var(--brass); }
 .nav-item.active { background: rgba(173,138,85,0.15); color: var(--brass); border-left: 3px solid var(--brass); }
+.notification-badge { display: inline-block; background: #9B5A46; color: var(--ivory); padding: 2px 6px; border-radius: 10px; font-size: 11px; font-weight: 600; margin-left: 6px; }
 .stat-box { background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 20px; margin-bottom: 16px; }
 .stat-num { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; color: var(--brass); }
 .lead-card { background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 16px; margin-bottom: 12px; cursor: pointer; }
 .lead-card:hover { background: rgba(173,138,85,0.08); border-color: var(--brass); }
+.message-item { background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 14px; margin-bottom: 10px; font-size: 13px; }
+.message-sent { border-left: 3px solid var(--brass); }
+.message-reply { border-left: 3px solid #7C9473; background: rgba(124,148,115,0.05); }
+.progress-bar { height: 4px; background: var(--hairline); border-radius: 2px; margin: 6px 0; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--brass); transition: width 0.3s; }
 button { background: transparent; color: var(--brass); border: 1px solid var(--brass); padding: 10px 16px; border-radius: 4px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; }
 button:hover { background: var(--brass); color: #17181B; }
 input[type=text], select { background: var(--panel); border: 1px solid var(--hairline); color: var(--ivory); padding: 10px; border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 13px; }
 input[type=text]:focus, select:focus { border-color: var(--brass); outline: none; }
-.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 50; }
-.modal.open { display: flex; align-items: center; justify-content: center; }
-.modal-content { background: var(--panel); border: 1px solid var(--hairline); border-radius: 8px; padding: 32px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
 h2 { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 20px; }
-.form-group { margin-bottom: 16px; }
-.form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
-.form-group input, .form-group select { width: 100%; }
 .empty { color: var(--muted); font-style: italic; }
-.success { color: var(--brass); }
-.sequence-msg { background: rgba(173,138,85,0.1); border: 1px solid var(--brass); border-radius: 4px; padding: 12px; margin-bottom: 10px; font-size: 12px; }
+.time-small { font-size: 11px; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -53,9 +52,9 @@ h2 { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 20px; }
     <div class="logo">Toro CRM</div>
     <nav>
       <div class="nav-item active" data-view="dashboard" onclick="loadView('dashboard')">📊 Dashboard</div>
+      <div class="nav-item" data-view="messages" onclick="loadView('messages')">💬 Message Activity<span class="notification-badge" id="pendingCount" style="display: none;">0</span></div>
       <div class="nav-item" data-view="schedule" onclick="loadView('schedule')">📅 Schedule Texts</div>
       <div class="nav-item" data-view="queue" onclick="loadView('queue')">🔥 Start My Day</div>
-      <div class="nav-item" data-view="leads" onclick="loadView('leads')">👥 All Leads</div>
     </nav>
     <hr style="border: none; border-top: 1px solid var(--hairline); margin: 24px 0;">
     <input type="text" id="apiKey" placeholder="Admin key" style="width: 100%; margin-bottom: 10px;">
@@ -78,39 +77,42 @@ h2 { font-family: 'Fraunces', serif; font-size: 20px; margin-bottom: 20px; }
         <div id="status-breakdown"></div>
       </div>
 
+      <div id="view-messages" style="display: none;">
+        <h2>💬 Message Activity & Replies</h2>
+        
+        <div style="background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 16px; margin-bottom: 24px;">
+          <h3 style="font-family: 'Fraunces', serif; font-size: 16px; margin-bottom: 16px;">🔔 Waiting for Your Reply</h3>
+          <div id="pendingReplies"></div>
+        </div>
+
+        <h3 style="font-family: 'Fraunces', serif; font-size: 16px; margin-bottom: 16px;">📤 Recent Sent Messages</h3>
+        <div id="messageLog"></div>
+      </div>
+
       <div id="view-schedule" style="display: none;">
         <h2>📅 Schedule Text Messages</h2>
         <div style="background: var(--panel); border: 1px solid var(--hairline); border-radius: 6px; padding: 20px; margin-bottom: 24px;">
-          <div class="form-group">
-            <label>Select Message Sequence</label>
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500;">Select Message Sequence</label>
             <select id="sequenceSelect" onchange="loadSequencePreview()" style="width: 100%;">
               <option value="">-- Choose a sequence --</option>
             </select>
           </div>
           <div id="sequencePreview"></div>
 
-          <div class="form-group">
-            <label>Select Contacts to Schedule</label>
-            <input type="text" id="searchLeads" placeholder="Search by name or phone..." onkeyup="filterLeads()" style="width: 100%; margin-bottom: 10px;">
+          <div style="margin-bottom: 16px;">
+            <label style="display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500;">Select Contacts</label>
+            <input type="text" id="searchLeads" placeholder="Search by name or phone..." onkeyup="filterLeads()" style="width: 100%; margin-bottom: 10px; padding: 10px;">
             <div id="leadCheckboxes" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--hairline); border-radius: 4px; padding: 10px;"></div>
           </div>
 
           <button onclick="scheduleSequence()" style="width: 100%; padding: 12px; font-size: 14px;">▶ Start Sending Messages</button>
         </div>
-
-        <h2>Active Sequences</h2>
-        <div id="activeSequences"></div>
       </div>
 
       <div id="view-queue" style="display: none;">
         <h2>🔥 Priority Queue</h2>
         <div id="queue-list"></div>
-      </div>
-
-      <div id="view-leads" style="display: none;">
-        <h2>All Leads</h2>
-        <input type="text" id="search-leads" placeholder="Search..." style="width: 100%; margin-bottom: 20px; padding: 10px;">
-        <div id="leads-list"></div>
       </div>
     </div>
   </div>
@@ -133,9 +135,9 @@ const loadView = (view) => {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.querySelector(`[data-view="${view}"]`).classList.add('active');
 
+  if (view === 'messages') loadMessageActivity();
   if (view === 'schedule') loadScheduleView();
   if (view === 'queue') loadQueue();
-  if (view === 'leads') loadLeads();
 };
 
 const loadDashboard = async () => {
@@ -150,8 +152,72 @@ const loadDashboard = async () => {
       html += `<div class="stat-box"><strong>${status}:</strong> ${count}</div>`;
     }
     document.getElementById('status-breakdown').innerHTML = html || '<p class="empty">No data</p>';
+    
+    // Also load pending replies count
+    loadPendingCount();
   } catch (err) {
     alert('Error loading dashboard');
+  }
+};
+
+const loadPendingCount = async () => {
+  try {
+    const data = await api('/api/message-activity/pending-replies');
+    const count = (Array.isArray(data) ? data.length : 0);
+    if (count > 0) {
+      document.getElementById('pendingCount').textContent = count;
+      document.getElementById('pendingCount').style.display = 'inline-block';
+    }
+  } catch (err) {
+    // Silently fail
+  }
+};
+
+const loadMessageActivity = async () => {
+  try {
+    // Get pending replies
+    const pending = await api('/api/message-activity/pending-replies');
+    let pendingHtml = '';
+    if (Array.isArray(pending) && pending.length > 0) {
+      for (const lead of pending.slice(0, 10)) {
+        const progress = `${lead.last_sent_step || 0}/${lead.total_steps}`;
+        const timeAgo = new Date(lead.last_reply_time).toLocaleTimeString();
+        pendingHtml += `
+          <div class="message-item message-reply">
+            <div style="font-weight: 500; color: var(--brass);">${lead.name}</div>
+            <div style="font-size: 11px; color: var(--muted); margin: 4px 0;">${lead.phone} • Step ${progress}</div>
+            <div style="margin: 6px 0; font-style: italic;">"${(lead.last_reply || '').substring(0, 80)}"</div>
+            <div class="time-small">Replied ${timeAgo}</div>
+          </div>
+        `;
+      }
+    } else {
+      pendingHtml = '<p class="empty">No pending replies</p>';
+    }
+    document.getElementById('pendingReplies').innerHTML = pendingHtml;
+
+    // Get all sent messages
+    const messages = await api('/api/message-activity');
+    let msgHtml = '';
+    if (Array.isArray(messages) && messages.length > 0) {
+      for (const msg of messages.slice(0, 50)) {
+        const progress = `${msg.step_order}/${msg.sequence_name}`;
+        const time = new Date(msg.created_at).toLocaleString();
+        msgHtml += `
+          <div class="message-item message-sent">
+            <div style="font-weight: 500;">${msg.name}</div>
+            <div style="font-size: 11px; color: var(--muted); margin: 4px 0;">${msg.phone} • ${progress}</div>
+            <div style="margin: 6px 0; font-size: 12px;">"${(msg.message_text || '').substring(0, 100)}"</div>
+            <div class="time-small">Sent ${time}</div>
+          </div>
+        `;
+      }
+    } else {
+      msgHtml = '<p class="empty">No messages sent yet</p>';
+    }
+    document.getElementById('messageLog').innerHTML = msgHtml;
+  } catch (err) {
+    document.getElementById('pendingReplies').innerHTML = '<p class="empty">Error loading activity</p>';
   }
 };
 
@@ -162,20 +228,18 @@ const loadScheduleView = async () => {
     
     let seqHtml = '<option value="">-- Choose a sequence --</option>';
     for (const seq of sequences) {
-      seqHtml += `<option value="${seq.id}">${seq.name} (${seq.message_count} messages)</option>`;
+      seqHtml += `<option value="${seq.id}">${seq.name}</option>`;
     }
     document.getElementById('sequenceSelect').innerHTML = seqHtml;
 
     let contactHtml = '';
-    for (const c of contacts.slice(0, 100)) {
+    for (const c of (Array.isArray(contacts) ? contacts : []).slice(0, 100)) {
       contactHtml += `<div style="margin-bottom: 8px;">
         <input type="checkbox" value="${c.id}" class="contact-checkbox"> 
         <span style="font-size: 13px;">${c.name || 'Unknown'} • ${c.phone}</span>
       </div>`;
     }
     document.getElementById('leadCheckboxes').innerHTML = contactHtml;
-
-    loadActiveSequences();
   } catch (err) {
     document.getElementById('leadCheckboxes').innerHTML = '<p class="empty">Error loading contacts</p>';
   }
@@ -190,13 +254,15 @@ const loadSequencePreview = async () => {
     let html = `<div style="background: rgba(173,138,85,0.05); border-radius: 4px; padding: 12px; margin-bottom: 12px;">
       <strong>${seq.name}</strong><br>
       <div style="font-size: 11px; color: var(--muted); margin-top: 8px;">`;
-    for (const msg of seq.messages) {
-      html += `<div class="sequence-msg">Message ${msg.step_order}: Sent ${msg.hours_after_start}h after start</div>`;
+    if (Array.isArray(seq.messages)) {
+      for (const msg of seq.messages) {
+        html += `<div style="margin-bottom: 6px;">Message ${msg.step_order}: Sent ${msg.hours_after_start}h after start</div>`;
+      }
     }
     html += '</div></div>';
     document.getElementById('sequencePreview').innerHTML = html;
   } catch (err) {
-    document.getElementById('sequencePreview').innerHTML = '<p class="empty">Error loading sequence</p>';
+    document.getElementById('sequencePreview').innerHTML = '';
   }
 };
 
@@ -225,27 +291,11 @@ const scheduleSequence = async () => {
       });
       scheduled++;
     }
-    alert(`✅ Scheduled ${scheduled} contacts! Messages start sending immediately and continue on schedule.`);
-    loadActiveSequences();
+    alert(`✅ Scheduled ${scheduled} contacts!`);
+    loadPendingCount();
     document.querySelectorAll('.contact-checkbox').forEach(cb => cb.checked = false);
   } catch (err) {
-    alert('Error scheduling: ' + err.message);
-  }
-};
-
-const loadActiveSequences = async () => {
-  try {
-    const data = await api('/api/message-sequences/sequences');
-    let html = '';
-    for (const seq of data) {
-      html += `<div class="lead-card">
-        <div style="font-weight: 500;">${seq.name}</div>
-        <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">${seq.message_count} messages</div>
-      </div>`;
-    }
-    document.getElementById('activeSequences').innerHTML = html || '<p class="empty">No active sequences</p>';
-  } catch (err) {
-    document.getElementById('activeSequences').innerHTML = '<p class="empty">Error loading</p>';
+    alert('Error scheduling');
   }
 };
 
@@ -253,7 +303,7 @@ const loadQueue = async () => {
   try {
     const data = await api('/api/dashboard/start-day');
     let html = '';
-    for (const lead of data.queue.slice(0, 30)) {
+    for (const lead of (data.queue || []).slice(0, 30)) {
       html += `<div class="lead-card">
         <div style="font-weight: 500;">${lead.name || 'Unknown'}</div>
         <div style="font-size: 12px; color: var(--muted);">${lead.phone} • ${lead.status}</div>
@@ -265,21 +315,7 @@ const loadQueue = async () => {
   }
 };
 
-const loadLeads = async () => {
-  try {
-    const data = await api('/api/contacts');
-    let html = '';
-    for (const lead of (Array.isArray(data) ? data : []).slice(0, 100)) {
-      html += `<div class="lead-card">
-        <div style="font-weight: 500;">${lead.name || 'Unknown'}</div>
-        <div style="font-size: 12px; color: var(--muted);">${lead.phone} • ${lead.status}</div>
-      </div>`;
-    }
-    document.getElementById('leads-list').innerHTML = html || '<p class="empty">No leads</p>';
-  } catch (err) {
-    document.getElementById('leads-list').innerHTML = '<p class="empty">Error</p>';
-  }
-};
+loadDashboard();
 </script>
 </body>
 </html>
